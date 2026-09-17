@@ -1,0 +1,6 @@
+{
+  "name": "G'AIM'E PC Bridge",
+  "description": "Windows lightgun HID bridge, 4-point calibration, jitter filter, and PCSX2 integration for G'AIM'E (2E2C:0631)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
