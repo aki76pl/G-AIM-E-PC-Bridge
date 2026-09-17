@@ -105,10 +105,10 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
             const found = monitors.find((m) => m.id === e.target.value);
             if (found) onSelectMonitor(found);
           }}
-          className="bg-neutral-950 border border-neutral-700 text-xs text-neutral-200 rounded-lg px-3 py-1.5 focus:border-cyan-500 outline-none w-full sm:w-auto"
+          className="bg-neutral-900 border border-neutral-700 text-xs text-neutral-100 font-medium rounded-lg px-3 py-1.5 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none w-full sm:w-auto cursor-pointer"
         >
           {monitors.map((m) => (
-            <option key={m.id} value={m.id}>
+            <option key={m.id} value={m.id} className="bg-neutral-900 text-neutral-100 font-medium py-1">
               {m.name}
             </option>
           ))}

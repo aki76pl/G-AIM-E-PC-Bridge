@@ -45,10 +45,10 @@ export const Pcsx2ConfigCard: React.FC<Pcsx2ConfigCardProps> = ({
             const found = GAME_PROFILES.find((p) => p.id === e.target.value);
             if (found) onSelectProfile(found);
           }}
-          className="bg-neutral-950 border border-neutral-700 text-xs text-neutral-200 rounded-lg px-3 py-1.5 focus:border-cyan-500 outline-none"
+          className="bg-neutral-900 border border-neutral-700 text-xs text-neutral-100 font-medium rounded-lg px-3 py-1.5 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none cursor-pointer"
         >
           {GAME_PROFILES.map((p) => (
-            <option key={p.id} value={p.id}>
+            <option key={p.id} value={p.id} className="bg-neutral-900 text-neutral-100 font-medium py-1">
               {p.name}
             </option>
           ))}
