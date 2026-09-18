@@ -36,6 +36,8 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
   }>({});
   const [isCompleted, setIsCompleted] = useState(false);
   const [computedResult, setComputedResult] = useState<CalibrationData | null>(null);
+  const [flash, setFlash] = useState(false);
+  const [lastTriggerState, setLastTriggerState] = useState(false);
 
   // Reset when opened
   useEffect(() => {
@@ -44,24 +46,48 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
       setCollectedPoints({});
       setIsCompleted(false);
       setComputedResult(null);
+      setFlash(false);
     }
   }, [isOpen]);
 
-  // Handle trigger pull from physical or simulated lightgun
+  // Handle trigger pull from physical or simulated lightgun (edge-triggered)
   useEffect(() => {
     if (!isOpen || isCompleted) return;
-    if (isTriggerPressed) {
+    if (isTriggerPressed && !lastTriggerState) {
       recordCorner(step, currentRawX, currentRawY);
     }
-  }, [isTriggerPressed, isOpen, step, isCompleted, currentRawX, currentRawY]);
+    setLastTriggerState(isTriggerPressed);
+  }, [isTriggerPressed, isOpen, step, isCompleted, currentRawX, currentRawY, lastTriggerState]);
+
+  // Keyboard support: Space / Enter to shoot current target, Esc to close
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Escape') {
+        onClose();
+      } else if ((e.code === 'Space' || e.code === 'Enter') && !isCompleted) {
+        e.preventDefault();
+        recordCorner(step, currentRawX, currentRawY);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isCompleted, step, currentRawX, currentRawY, onClose]);
+
+  const triggerFlash = () => {
+    setFlash(true);
+    setTimeout(() => setFlash(false), 180);
+  };
 
   const recordCorner = (currentStep: number, rawX: number, rawY: number) => {
     const corner = CORNERS[currentStep];
     if (!corner) return;
 
+    triggerFlash();
+
     const nextPoints = {
       ...collectedPoints,
-      [corner.id]: { x: rawX, y: rawY },
+      [corner.id]: { x: rawX || 5000, y: rawY || 5000 },
     };
     setCollectedPoints(nextPoints);
 
@@ -143,10 +169,39 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
       </div>
 
       {/* Main Calibration Stage */}
-      <div className="relative flex-1 my-4 border border-neutral-800/80 rounded-xl overflow-hidden bg-neutral-950 flex items-center justify-center">
+      <div 
+        onClick={() => {
+          if (!isCompleted) {
+            recordCorner(step, currentRawX, currentRawY);
+          }
+        }}
+        className="relative flex-1 my-4 border border-neutral-800/80 rounded-xl overflow-hidden bg-neutral-950 flex items-center justify-center cursor-crosshair"
+      >
+        {/* White Shot Flash Effect */}
+        <div className={`absolute inset-0 bg-white pointer-events-none transition-opacity duration-150 z-20 ${flash ? 'opacity-40' : 'opacity-0'}`} />
+
+        {/* Previous Captured Markers */}
+        {CORNERS.map((c, i) => {
+          if (i >= step) return null;
+          return (
+            <div
+              key={c.id}
+              style={{ left: `${c.xPct}%`, top: `${c.yPct}%` }}
+              className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-10"
+            >
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-300 font-bold text-xs shadow-lg shadow-emerald-500/30">
+                ✓ {i + 1}
+              </div>
+            </div>
+          );
+        })}
+
         {/* Instruction overlay in center */}
         {!isCompleted ? (
-          <div className="text-center max-w-md bg-neutral-900/90 border border-neutral-800 p-5 rounded-xl backdrop-blur">
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            className="text-center max-w-md bg-neutral-900/90 border border-neutral-800 p-5 rounded-xl backdrop-blur relative z-10 shadow-2xl"
+          >
             <span className="text-xs font-mono uppercase text-amber-400 font-bold tracking-widest block mb-1">
               Krok {step + 1} z 4
             </span>
@@ -155,12 +210,15 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
             <div className="inline-block font-mono text-xs bg-neutral-950 px-3 py-1 rounded text-cyan-300 border border-neutral-800">
               Bieżące RAW: X={currentRawX} | Y={currentRawY}
             </div>
-            <p className="text-[11px] text-neutral-500 mt-2">
-              (Wciśnij fizyczny spust lub kliknij myszą na celownik w rogu)
+            <p className="text-[11px] text-neutral-400 mt-2 font-medium">
+              💡 Naciśnij <kbd className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-cyan-300 font-mono text-[10px]">SPACJĘ</kbd>, kliknij myszą lub strzel pistoletem G'AIM'E
             </p>
           </div>
         ) : (
-          <div className="text-center max-w-lg bg-neutral-900/90 border border-neutral-800 p-6 rounded-xl backdrop-blur space-y-4">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="text-center max-w-lg bg-neutral-900/90 border border-neutral-800 p-6 rounded-xl backdrop-blur space-y-4 relative z-10 shadow-2xl"
+          >
             <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-6 h-6" />
             </div>
@@ -208,8 +266,11 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
               left: `${currentCorner.xPct}%`,
               top: `${currentCorner.yPct}%`,
             }}
-            onClick={() => recordCorner(step, currentRawX, currentRawY)}
-            className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
+            onClick={(e) => {
+              e.stopPropagation();
+              recordCorner(step, currentRawX, currentRawY);
+            }}
+            className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10"
           >
             {/* Animated Concentric Rings */}
             <div className="relative w-16 h-16 flex items-center justify-center">

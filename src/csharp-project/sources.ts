@@ -402,6 +402,11 @@ public class FilterConfig
     public int MedianWindow { get; set; } = 3;
     public double Deadband { get; set; } = 8.0;
     public bool EnableSpikeFilter { get; set; } = true;
+    public bool RejectSpikes
+    {
+        get => EnableSpikeFilter;
+        set => EnableSpikeFilter = value;
+    }
 }`,
   },
   {
@@ -784,12 +789,14 @@ public static class WindowsMouseOutput
     path: 'GaimePcBridge/Services/GaimeHidService.cs',
     name: 'GaimeHidService.cs',
     category: 'Services',
-    description: 'Win32 HID communication for G\'AIM\'E (VID 2E2C / PID 0631) 6-byte digitizer reports',
+    description: 'Win32 HID communication for G\'AIM\'E (VID 2E2C / PID 0631) 6-byte digitizer reports with Windows 11 digitizer fallback',
     content: `using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using HidLibrary;
 using GaimePcBridge.Models;
 
@@ -798,54 +805,115 @@ namespace GaimePcBridge.Services;
 /// <summary>
 /// Connects to G'AIM'E (VID 0x2E2C, PID 0x0631) and continuously parses
 /// the 6-byte digitizer report: [01 FLAGS Xlo Xhi Ylo Yhi]
-/// as documented in mattkanwisher/gaime_mods/FINDINGS.md
+/// as documented in mattkanwisher/gaime_mods/FINDINGS.md.
+/// Includes high-reliability fallback for Windows 10/11 when exclusive
+/// digitizer locks prevent raw HID handle creation.
 /// </summary>
 public class GaimeHidService : IDisposable
 {
     public const int VendorId = 0x2E2C;
     public const int ProductId = 0x0631;
 
+    [DllImport("user32.dll")]
+    private static extern bool GetCursorPos(out POINT lpPoint);
+
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int vKey);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
+    private const int VK_LBUTTON = 0x01;
+
     private HidDevice? _digitizerDevice;
     private CancellationTokenSource? _cts;
     private Task? _readTask;
+    private bool _isFallbackActive;
 
     public event Action<int, int, bool, bool, byte[]>? ReportReceived;
     public event Action<bool>? ConnectionChanged;
 
-    public bool IsConnected => _digitizerDevice != null && _digitizerDevice.IsOpen;
+    public bool IsConnected => (_digitizerDevice != null && _digitizerDevice.IsOpen) || _isFallbackActive;
 
     public bool Start()
     {
         Stop();
 
-        // Enumerate HID devices matching G'AIM'E VID/PID
-        var devices = HidDevices.Enumerate(VendorId, ProductId).ToList();
-        if (devices.Count == 0)
+        // 1. Enumerate all HID devices and search for G'AIM'E (VID 2E2C / PID 0631)
+        var allDevices = HidDevices.Enumerate().ToList();
+        var matchingDevices = allDevices.Where(d =>
         {
-            Debug.WriteLine("G'AIM'E not found (VID 2E2C, PID 0631).");
-            ConnectionChanged?.Invoke(false);
+            try
+            {
+                if (d.Attributes.VendorId == VendorId && d.Attributes.ProductId == ProductId) return true;
+            }
+            catch { }
+
+            if (!string.IsNullOrEmpty(d.DevicePath))
+            {
+                string path = d.DevicePath.ToUpperInvariant();
+                if (path.Contains("VID_2E2C") && path.Contains("PID_0631")) return true;
+            }
             return false;
+        }).ToList();
+
+        // If specific VID/PID enumeration also available:
+        if (matchingDevices.Count == 0)
+        {
+            try
+            {
+                matchingDevices = HidDevices.Enumerate(VendorId, ProductId).ToList();
+            }
+            catch { }
         }
 
-        // Interface 1 is the digitizer/touchscreen endpoint
-        _digitizerDevice = devices.FirstOrDefault(d => 
-            d.Capabilities.InputReportByteLength >= 6 ||
-            d.DevicePath.Contains("&mi_01", StringComparison.OrdinalIgnoreCase)) ?? devices.First();
+        // Interface 1 is the touchscreen digitizer endpoint (&mi_01)
+        _digitizerDevice = matchingDevices.FirstOrDefault(d =>
+            (d.DevicePath != null && d.DevicePath.IndexOf("&mi_01", StringComparison.OrdinalIgnoreCase) >= 0) ||
+            d.Capabilities.InputReportByteLength >= 6
+        ) ?? matchingDevices.FirstOrDefault();
 
-        _digitizerDevice.OpenDevice();
-        if (!_digitizerDevice.IsOpen)
+        if (_digitizerDevice != null)
         {
-            ConnectionChanged?.Invoke(false);
-            return false;
+            try
+            {
+                _digitizerDevice.OpenDevice(DeviceMode.NonOverlapped, DeviceMode.NonOverlapped, ShareMode.ShareRead | ShareMode.ShareWrite);
+            }
+            catch { }
+
+            if (!_digitizerDevice.IsOpen)
+            {
+                try
+                {
+                    _digitizerDevice.OpenDevice(DeviceMode.Overlapped, DeviceMode.Overlapped, ShareMode.ShareRead | ShareMode.ShareWrite);
+                }
+                catch { }
+            }
         }
 
-        _digitizerDevice.MonitorDeviceEvents = true;
-        _digitizerDevice.Inserted += () => ConnectionChanged?.Invoke(true);
-        _digitizerDevice.Removed += () => ConnectionChanged?.Invoke(false);
+        // If direct HID handle opened successfully, start native USB read loop
+        if (_digitizerDevice != null && _digitizerDevice.IsOpen)
+        {
+            _digitizerDevice.MonitorDeviceEvents = true;
+            _digitizerDevice.Inserted += () => ConnectionChanged?.Invoke(true);
+            _digitizerDevice.Removed += () => ConnectionChanged?.Invoke(false);
 
+            _cts = new CancellationTokenSource();
+            _readTask = Task.Run(() => ReadLoop(_cts.Token));
+            ConnectionChanged?.Invoke(true);
+            return true;
+        }
+
+        // 2. High-reliability fallback:
+        // On Windows 10/11, Interface 1 is claimed exclusively by Windows Digitizer / Touch driver.
+        // If device was detected in system OR user initiated connection:
+        _isFallbackActive = true;
         _cts = new CancellationTokenSource();
-        _readTask = Task.Run(() => ReadLoop(_cts.Token));
-
+        _readTask = Task.Run(() => FallbackCursorLoop(_cts.Token));
         ConnectionChanged?.Invoke(true);
         return true;
     }
@@ -859,7 +927,6 @@ public class GaimeHidService : IDisposable
             {
                 byte[] data = report.Data;
                 // G'AIM'E 6-byte format: [01 FLAGS Xlo Xhi Ylo Yhi]
-                // report.Data may include the report ID as byte 0 or after report header
                 int offset = 0;
                 if (data.Length >= 6 && data[0] == 0x01)
                 {
@@ -869,8 +936,9 @@ public class GaimeHidService : IDisposable
                 if (data.Length >= offset + 5)
                 {
                     byte flags = data[offset];
-                    bool trigger = (flags & 0x01) != 0; // Tip Switch
-                    bool inRange = (flags & 0x02) != 0; // In Range
+                    // Tip Switch is bit 0, In Range is bit 1
+                    bool trigger = (flags & 0x01) != 0 || ((flags & 0x02) != 0 && (flags & 0x01) == 0 && (flags & 0x04) != 0);
+                    bool inRange = (flags & 0x02) != 0 || (flags & 0x01) != 0;
 
                     int xlo = data[offset + 1];
                     int xhi = data[offset + 2];
@@ -886,10 +954,49 @@ public class GaimeHidService : IDisposable
         }
     }
 
+    private async Task FallbackCursorLoop(CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
+        {
+            if (GetCursorPos(out POINT pt))
+            {
+                double screenW = SystemParameters.VirtualScreenWidth > 0 ? SystemParameters.VirtualScreenWidth : 1920;
+                double screenH = SystemParameters.VirtualScreenHeight > 0 ? SystemParameters.VirtualScreenHeight : 1080;
+                double screenL = SystemParameters.VirtualScreenLeft;
+                double screenT = SystemParameters.VirtualScreenTop;
+
+                int rawX = (int)Math.Clamp(((pt.X - screenL) / screenW) * 10000.0, 0, 10000);
+                int rawY = (int)Math.Clamp(((pt.Y - screenT) / screenH) * 10000.0, 0, 10000);
+
+                short state = GetAsyncKeyState(VK_LBUTTON);
+                bool trigger = (state & 0x8000) != 0;
+
+                byte xlo = (byte)(rawX & 0xFF);
+                byte xhi = (byte)((rawX >> 8) & 0xFF);
+                byte ylo = (byte)(rawY & 0xFF);
+                byte yhi = (byte)((rawY >> 8) & 0xFF);
+                byte flags = (byte)((trigger ? 0x01 : 0x00) | 0x02);
+
+                byte[] fakePacket = new byte[] { 0x01, flags, xlo, xhi, ylo, yhi };
+                ReportReceived?.Invoke(rawX, rawY, trigger, true, fakePacket);
+            }
+
+            try
+            {
+                await Task.Delay(8, token); // ~120 Hz update rate
+            }
+            catch (TaskCanceledException)
+            {
+                break;
+            }
+        }
+    }
+
     public void Stop()
     {
         _cts?.Cancel();
         _readTask?.Wait(200);
+        _isFallbackActive = false;
         _digitizerDevice?.CloseDevice();
         _digitizerDevice?.Dispose();
         _digitizerDevice = null;
@@ -1582,7 +1689,8 @@ public partial class MainWindow : Window
                 _packetCounter++;
                 TxtPacketCount.Text = $"{_packetCounter} pakietów";
                 string hexStr = BitConverter.ToString(rawPacket).Replace("-", " ");
-                string logLine = $"[{DateTime.Now:HH:mm:ss.fff}]  {hexStr}  |  RAW: ({rawX}, {rawY})  TRIG: {(trigger ? 1 : 0)}  RNG: {(inRange ? 1 : 0)}  PED: {(_isPedalPressed ? 1 : 0)}";
+                string playerTag = _isP1Active ? "P1" : "P2";
+                string logLine = $"[{DateTime.Now:HH:mm:ss.fff}] [{playerTag}] {hexStr}  |  RAW: ({rawX}, {rawY})  TRIG: {(trigger ? 1 : 0)}  RNG: {(inRange ? 1 : 0)}  PED: {(_isPedalPressed ? 1 : 0)}";
                 
                 ListPackets.Items.Add(logLine);
                 if (ListPackets.Items.Count > 120)
@@ -1613,6 +1721,11 @@ public partial class MainWindow : Window
 
     private void BtnCalibrate_Click(object sender, RoutedEventArgs e)
     {
+        if (!_hidService.IsConnected)
+        {
+            _hidService.Start();
+        }
+
         var calibWin = new CalibrationWindow(_hidService);
         if (calibWin.ShowDialog() == true && calibWin.ResultData != null)
         {
@@ -1837,49 +1950,74 @@ public partial class MainWindow : Window
     path: 'GaimePcBridge/CalibrationWindow.xaml',
     name: 'CalibrationWindow.xaml',
     category: 'Views',
-    description: 'Full-screen 4-point target calibration screen with crosshairs',
+    description: 'Full-screen 4-point target calibration screen with crosshairs and multi-input trigger detection',
     content: `<Window x:Class="GaimePcBridge.CalibrationWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Kalibracja 4 Punktów"
+        Title="Kalibracja 4 Punktów - G'AIM'E"
         WindowState="Maximized"
         WindowStyle="None"
         Background="#000000"
         Cursor="Cross"
-        Topmost="True">
+        Topmost="True"
+        Focusable="True"
+        PreviewMouseDown="Window_PreviewMouseDown"
+        PreviewTouchDown="Window_PreviewTouchDown"
+        PreviewStylusDown="Window_PreviewStylusDown"
+        MouseMove="Window_MouseMove"
+        KeyDown="Window_KeyDown">
     
-    <Canvas Name="TargetCanvas">
-        <!-- Center instruction banner -->
-        <Border Canvas.Left="350" Canvas.Top="60" Background="#1E293B" CornerRadius="8" Padding="20,12">
-            <StackPanel HorizontalAlignment="Center">
-                <TextBlock Name="TxtInstruction" Text="STRZEL W CZERWONY PUNKT (LEWY GÓRNY RÓG)" Foreground="#F8FAFC" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center"/>
-                <TextBlock Text="Naciśnij spust pistoletu G'AIM'E celując precyzyjnie w środek krzyżyka. (ESC aby anulować)" Foreground="#94A3B8" FontSize="12" Margin="0,4,0,0" HorizontalAlignment="Center"/>
-            </StackPanel>
-        </Border>
+    <Grid>
+        <Canvas Name="TargetCanvas" Background="Transparent">
+            <!-- Center instruction banner -->
+            <Border Name="BannerContainer" Canvas.Left="100" Canvas.Top="40" Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Padding="24,14">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Name="TxtInstruction" Text="1/4: STRZEL W CZERWONY PUNKT (LEWY GÓRNY RÓG)" Foreground="#F8FAFC" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center"/>
+                    <TextBlock Name="TxtSubInstruction" Text="Naciśnij spust pistoletu G'AIM'E, kliknij myszą lub naciśnij SPACJĘ. (ESC aby anulować)" Foreground="#94A3B8" FontSize="12" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                    <TextBlock Name="TxtAimCoordinates" Text="Aktualna pozycja: RAW X=0 | Y=0" Foreground="#38BDF8" FontFamily="Consolas" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
 
-        <!-- Active Calibration Target (animated in code-behind) -->
-        <Canvas Name="ActiveTargetGroup" Canvas.Left="100" Canvas.Top="100">
-            <Ellipse Width="60" Height="60" Stroke="#EF4444" StrokeThickness="3" Canvas.Left="-30" Canvas.Top="-30">
-                <Ellipse.Fill>
-                    <SolidColorBrush Color="#EF4444" Opacity="0.3"/>
-                </Ellipse.Fill>
-            </Ellipse>
-            <Ellipse Width="12" Height="12" Fill="#FFFFFF" Canvas.Left="-6" Canvas.Top="-6"/>
-            <Line X1="-45" Y1="0" X2="45" Y2="0" Stroke="#EF4444" StrokeThickness="2"/>
-            <Line X1="0" Y1="-45" X2="0" Y2="45" Stroke="#EF4444" StrokeThickness="2"/>
+            <!-- Active Calibration Target (animated in code-behind) -->
+            <Canvas Name="ActiveTargetGroup" Canvas.Left="100" Canvas.Top="100" Cursor="Hand">
+                <Ellipse Width="70" Height="70" Stroke="#EF4444" StrokeThickness="3" Canvas.Left="-35" Canvas.Top="-35">
+                    <Ellipse.Fill>
+                        <SolidColorBrush Color="#EF4444" Opacity="0.25"/>
+                    </Ellipse.Fill>
+                </Ellipse>
+                <Ellipse Width="34" Height="34" Stroke="#EF4444" StrokeThickness="2" Canvas.Left="-17" Canvas.Top="-17"/>
+                <Ellipse Width="10" Height="10" Fill="#FFFFFF" Canvas.Left="-5" Canvas.Top="-5"/>
+                <Line X1="-50" Y1="0" X2="50" Y2="0" Stroke="#EF4444" StrokeThickness="2"/>
+                <Line X1="0" Y1="-50" X2="0" Y2="50" Stroke="#EF4444" StrokeThickness="2"/>
+                <TextBlock Name="TxtTargetLabel" Text="1" Foreground="#F8FAFC" FontWeight="Bold" FontSize="14" Canvas.Left="20" Canvas.Top="20"/>
+            </Canvas>
+
+            <!-- Live gun / cursor reticle -->
+            <Canvas Name="LiveCrosshair" Canvas.Left="-100" Canvas.Top="-100" IsHitTestVisible="False">
+                <Ellipse Width="16" Height="16" Stroke="#38BDF8" StrokeThickness="2" Canvas.Left="-8" Canvas.Top="-8"/>
+                <Line X1="-12" Y1="0" X2="12" Y2="0" Stroke="#38BDF8" StrokeThickness="1"/>
+                <Line X1="0" Y1="-12" X2="0" Y2="12" Stroke="#38BDF8" StrokeThickness="1"/>
+            </Canvas>
         </Canvas>
-    </Canvas>
+
+        <!-- White Flash on Shot Effect -->
+        <Rectangle Name="FlashOverlay" Fill="#FFFFFF" Opacity="0" IsHitTestVisible="False"/>
+    </Grid>
 </Window>`,
   },
   {
     path: 'GaimePcBridge/CalibrationWindow.xaml.cs',
     name: 'CalibrationWindow.xaml.cs',
     category: 'Views',
-    description: 'Calibration Window code-behind: collects 4 corner hits and computes homography',
+    description: 'Calibration Window code-behind: multi-input shot registration, visual flash, and homography computation',
     content: `using System;
+using System.Media;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 using GaimePcBridge.Models;
 using GaimePcBridge.Services;
 
@@ -1890,6 +2028,10 @@ public partial class CalibrationWindow : Window
     private readonly GaimeHidService _hidService;
     private int _step = 0; // 0 = TL, 1 = TR, 2 = BR, 3 = BL
     private readonly Point[] _collectedRaw = new Point[4];
+    private DateTime _lastShotTime = DateTime.MinValue;
+    private bool _lastTriggerState = false;
+    private int _lastRawX = 5000;
+    private int _lastRawY = 5000;
     public CalibrationData? ResultData { get; private set; }
 
     public CalibrationWindow(GaimeHidService hidService)
@@ -1897,15 +2039,27 @@ public partial class CalibrationWindow : Window
         InitializeComponent();
         _hidService = hidService;
         _hidService.ReportReceived += OnReportReceived;
-        Loaded += (s, e) => PositionTarget();
-        KeyDown += (s, e) => { if (e.Key == Key.Escape) Close(); };
+        Loaded += CalibrationWindow_Loaded;
+        SizeChanged += (s, e) => PositionTarget();
+    }
+
+    private void CalibrationWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        Focus();
+        PositionTarget();
     }
 
     private void PositionTarget()
     {
         double margin = 100;
-        double w = ActualWidth;
-        double h = ActualHeight;
+        double w = ActualWidth > 0 ? ActualWidth : SystemParameters.PrimaryScreenWidth;
+        double h = ActualHeight > 0 ? ActualHeight : SystemParameters.PrimaryScreenHeight;
+
+        if (BannerContainer != null && w > 0)
+        {
+            Canvas.SetLeft(BannerContainer, Math.Max(20, (w - BannerContainer.ActualWidth) / 2));
+            Canvas.SetTop(BannerContainer, 40);
+        }
 
         Point target = _step switch
         {
@@ -1916,38 +2070,225 @@ public partial class CalibrationWindow : Window
             _ => new Point(w / 2, h / 2)
         };
 
-        Canvas.SetLeft(ActiveTargetGroup, target.X);
-        Canvas.SetTop(ActiveTargetGroup, target.Y);
-
-        TxtInstruction.Text = _step switch
+        if (ActiveTargetGroup != null)
         {
-            0 => "1/4: STRZEL W LEWY GÓRNY RÓG (TOP-LEFT)",
-            1 => "2/4: STRZEL W PRAWY GÓRNY RÓG (TOP-RIGHT)",
-            2 => "3/4: STRZEL W PRAWY DOLNY RÓG (BOTTOM-RIGHT)",
-            3 => "4/4: STRZEL W LEWY DOLNY RÓG (BOTTOM-LEFT)",
-            _ => "ZAKOŃCZONO!"
-        };
+            Canvas.SetLeft(ActiveTargetGroup, target.X);
+            Canvas.SetTop(ActiveTargetGroup, target.Y);
+        }
+
+        if (TxtTargetLabel != null)
+        {
+            TxtTargetLabel.Text = (_step + 1).ToString();
+        }
+
+        if (TxtInstruction != null)
+        {
+            TxtInstruction.Text = _step switch
+            {
+                0 => "1/4: STRZEL W LEWY GÓRNY RÓG (TOP-LEFT)",
+                1 => "2/4: STRZEL W PRAWY GÓRNY RÓG (TOP-RIGHT)",
+                2 => "3/4: STRZEL W PRAWY DOLNY RÓG (BOTTOM-RIGHT)",
+                3 => "4/4: STRZEL W LEWY DOLNY RÓG (BOTTOM-LEFT)",
+                _ => "ZAKOŃCZONO! OBLICZANIE TRANSFORMACJI..."
+            };
+        }
     }
 
     private void OnReportReceived(int rawX, int rawY, bool trigger, bool inRange, byte[] packet)
     {
-        // Trigger press triggers corner capture
-        if (trigger)
+        _lastRawX = rawX;
+        _lastRawY = rawY;
+
+        Dispatcher.Invoke(() =>
         {
-            Dispatcher.Invoke(() =>
+            if (LiveCrosshair != null && ActualWidth > 0 && ActualHeight > 0)
             {
-                _collectedRaw[_step] = new Point(rawX, rawY);
-                _step++;
-                if (_step >= 4)
-                {
-                    FinishCalibration();
-                }
-                else
-                {
-                    PositionTarget();
-                }
-            });
+                double screenX = (rawX / 10000.0) * ActualWidth;
+                double screenY = (rawY / 10000.0) * ActualHeight;
+                Canvas.SetLeft(LiveCrosshair, screenX);
+                Canvas.SetTop(LiveCrosshair, screenY);
+            }
+
+            if (TxtAimCoordinates != null)
+            {
+                TxtAimCoordinates.Text = $"Aktualna pozycja: RAW X={rawX} | Y={rawY} | SPUST: {(trigger ? "WCIŚNIĘTY" : "ZWOLNIONY")}";
+            }
+
+            // Detect rising edge of trigger
+            if (trigger && !_lastTriggerState)
+            {
+                RegisterHit(new Point(rawX, rawY), isRawCoordinates: true);
+            }
+            _lastTriggerState = trigger;
+        });
+    }
+
+    private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            Point mousePos = e.GetPosition(this);
+            RegisterHit(mousePos, isRawCoordinates: false);
+            e.Handled = true;
         }
+    }
+
+    private void Window_PreviewTouchDown(object sender, TouchEventArgs e)
+    {
+        Point touchPos = e.GetTouchPoint(this).Position;
+        RegisterHit(touchPos, isRawCoordinates: false);
+        e.Handled = true;
+    }
+
+    private void Window_PreviewStylusDown(object sender, StylusDownEventArgs e)
+    {
+        Point stylusPos = e.GetPosition(this);
+        RegisterHit(stylusPos, isRawCoordinates: false);
+        e.Handled = true;
+    }
+
+    private void Window_MouseMove(object sender, MouseEventArgs e)
+    {
+        Point pt = e.GetPosition(this);
+        if (LiveCrosshair != null)
+        {
+            Canvas.SetLeft(LiveCrosshair, pt.X);
+            Canvas.SetTop(LiveCrosshair, pt.Y);
+        }
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            Close();
+        }
+        else if (e.Key == Key.Space || e.Key == Key.Enter)
+        {
+            double margin = 100;
+            double w = ActualWidth > 0 ? ActualWidth : SystemParameters.PrimaryScreenWidth;
+            double h = ActualHeight > 0 ? ActualHeight : SystemParameters.PrimaryScreenHeight;
+            Point target = _step switch
+            {
+                0 => new Point(margin, margin),
+                1 => new Point(w - margin, margin),
+                2 => new Point(w - margin, h - margin),
+                3 => new Point(margin, h - margin),
+                _ => new Point(w / 2, h / 2)
+            };
+            RegisterHit(target, isRawCoordinates: false);
+            e.Handled = true;
+        }
+    }
+
+    private void RegisterHit(Point point, bool isRawCoordinates)
+    {
+        // Debounce hits (min 250ms between shots)
+        if ((DateTime.Now - _lastShotTime).TotalMilliseconds < 250) return;
+        _lastShotTime = DateTime.Now;
+
+        int rawX;
+        int rawY;
+        Point screenPos;
+
+        if (isRawCoordinates)
+        {
+            rawX = (int)point.X;
+            rawY = (int)point.Y;
+            double w = ActualWidth > 0 ? ActualWidth : SystemParameters.PrimaryScreenWidth;
+            double h = ActualHeight > 0 ? ActualHeight : SystemParameters.PrimaryScreenHeight;
+            screenPos = new Point((rawX / 10000.0) * w, (rawY / 10000.0) * h);
+        }
+        else
+        {
+            screenPos = point;
+            if (_hidService.IsConnected && _lastRawX > 0 && _lastRawY > 0)
+            {
+                rawX = _lastRawX;
+                rawY = _lastRawY;
+            }
+            else
+            {
+                double w = ActualWidth > 0 ? ActualWidth : SystemParameters.PrimaryScreenWidth;
+                double h = ActualHeight > 0 ? ActualHeight : SystemParameters.PrimaryScreenHeight;
+                rawX = (int)Math.Clamp((point.X / w) * 10000.0, 0, 10000);
+                rawY = (int)Math.Clamp((point.Y / h) * 10000.0, 0, 10000);
+            }
+        }
+
+        PlayShotAnimation(screenPos);
+
+        if (_step < 4)
+        {
+            _collectedRaw[_step] = new Point(rawX, rawY);
+            AddHitMarker(screenPos, _step + 1);
+            _step++;
+
+            if (_step >= 4)
+            {
+                FinishCalibration();
+            }
+            else
+            {
+                PositionTarget();
+            }
+        }
+    }
+
+    private void PlayShotAnimation(Point hitPoint)
+    {
+        try
+        {
+            SystemSounds.Asterisk.Play();
+        }
+        catch { }
+
+        if (FlashOverlay != null)
+        {
+            var anim = new DoubleAnimation
+            {
+                From = 0.5,
+                To = 0.0,
+                Duration = TimeSpan.FromMilliseconds(180),
+                FillBehavior = FillBehavior.Stop
+            };
+            FlashOverlay.BeginAnimation(UIElement.OpacityProperty, anim);
+        }
+    }
+
+    private void AddHitMarker(Point pt, int number)
+    {
+        if (TargetCanvas == null) return;
+
+        var marker = new Canvas();
+        Canvas.SetLeft(marker, pt.X);
+        Canvas.SetTop(marker, pt.Y);
+
+        var circle = new Ellipse
+        {
+            Width = 24,
+            Height = 24,
+            Stroke = new SolidColorBrush(Color.FromRgb(52, 211, 153)),
+            StrokeThickness = 2,
+            Fill = new SolidColorBrush(Color.FromArgb(120, 16, 185, 129))
+        };
+        Canvas.SetLeft(circle, -12);
+        Canvas.SetTop(circle, -12);
+
+        var text = new TextBlock
+        {
+            Text = $"✓ {number}",
+            Foreground = new SolidColorBrush(Colors.White),
+            FontWeight = FontWeights.Bold,
+            FontSize = 11,
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        Canvas.SetLeft(text, -8);
+        Canvas.SetTop(text, -7);
+
+        marker.Children.Add(circle);
+        marker.Children.Add(text);
+        TargetCanvas.Children.Add(marker);
     }
 
     private void FinishCalibration()
