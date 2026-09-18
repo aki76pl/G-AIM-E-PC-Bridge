@@ -5,7 +5,7 @@ import { GunStatusCard } from './components/GunStatusCard';
 import { LiveAimCanvas } from './components/LiveAimCanvas';
 import { FilterControls } from './components/FilterControls';
 import { CalibrationModal } from './components/CalibrationModal';
-import { Pcsx2ConfigCard } from './components/Pcsx2ConfigCard';
+import { EmulatorIntegrationsCard } from './components/EmulatorIntegrationsCard';
 import { DualGunPedalCard } from './components/DualGunPedalCard';
 import { RawPacketLog } from './components/RawPacketLog';
 import { SourceCodeModal } from './components/SourceCodeModal';
@@ -270,7 +270,18 @@ export default function App() {
     } else {
       setCalibrationP2(data);
     }
-    showNotification(`Zastosowano nową kalibrację perspektywiczną 4 punktów dla Gracza ${activePlayer}!`);
+
+    if (data.optimalRanges) {
+      setFilterSettings(prev => ({
+        ...prev,
+        stabilityVsSpeed: data.optimalRanges!.recommendedFilterStability,
+      }));
+      showNotification(
+        `Zastosowano kalibrację i optymalną czułość (${Math.round(data.optimalRanges.recommendedFilterStability * 100)}% stabilizacji) dla Gracza ${activePlayer}!`
+      );
+    } else {
+      showNotification(`Zastosowano nową kalibrację perspektywiczną 4 punktów dla Gracza ${activePlayer}!`);
+    }
   };
 
   const handleDownloadZip = async () => {
@@ -389,9 +400,21 @@ export default function App() {
             }}
           />
 
-          <Pcsx2ConfigCard
+          <EmulatorIntegrationsCard
             selectedProfile={selectedProfile}
             onSelectProfile={handleSelectProfile}
+            calibrationP1={calibrationP1}
+            calibrationP2={calibrationP2}
+            selectedMonitor={selectedMonitor}
+            onApplyPresetSensitivity={(stability) => {
+              setFilterSettings((prev) => ({
+                ...prev,
+                stabilityVsSpeed: stability,
+              }));
+              showNotification(
+                `Zastosowano czułość filtra z profilu (${Math.round(stability * 100)}% stabilizacji)!`
+              );
+            }}
           />
 
           <RawPacketLog

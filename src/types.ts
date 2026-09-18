@@ -13,6 +13,18 @@ export interface CalibrationData {
   isCalibrated: boolean;
   calibratedAt?: string;
   homographyMatrix?: number[]; // 9 elements [h00, h01, h02, h10, h11, h12, h20, h21, h22]
+  mode?: 'manual' | 'auto-detect';
+  optimalRanges?: {
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+    rangeX: number;
+    rangeY: number;
+    jitterVariance: number;
+    recommendedFilterStability: number;
+    coveragePct: number;
+  };
 }
 
 export interface GunState {
@@ -61,15 +73,34 @@ export interface MonitorProfile {
   scaleFactor: number;
 }
 
+export type EmulatorTarget = 'DemulShooter' | 'MAME' | 'PCSX2' | 'Model2' | 'TeknoParrot' | 'vJoy';
+
+export interface ButtonMapping {
+  trigger: string;
+  actionOrReload: string;
+  pedal: string;
+  start: string;
+  coin: string;
+  extra?: string;
+}
+
 export interface GameProfile {
   id: string;
   name: string;
   system: string;
+  emulator: EmulatorTarget;
+  romName: string;
   description: string;
   pedalAction: 'DUCK' | 'RELOAD' | 'CUSTOM';
   offscreenReload: boolean;
   recommendedFilterStability: number;
+  deadzone?: number;
+  sensitivityMultiplier?: number;
+  buttonMapping?: ButtonMapping;
+  demulShooterTarget?: string;
   pcsx2ConfigSnippet: string;
+  mameRomSnippet?: string;
+  notes?: string;
 }
 
 export interface CSharpSourceFile {
