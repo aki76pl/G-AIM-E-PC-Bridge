@@ -33,6 +33,7 @@ interface EmulatorIntegrationsCardProps {
 
 const EMULATOR_CATEGORIES: { id: 'ALL' | EmulatorTarget; label: string }[] = [
   { id: 'ALL', label: 'Wszystkie' },
+  { id: 'RetroArch', label: 'RetroArch (Snes9x)' },
   { id: 'DemulShooter', label: 'DemulShooter' },
   { id: 'MAME', label: 'MAME' },
   { id: 'Model2', label: 'Model 2' },
@@ -72,7 +73,8 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
     setCustomSensitivity(profile.sensitivityMultiplier ?? 1.0);
 
     // Auto-select most appropriate config format for the game's emulator
-    if (profile.emulator === 'MAME') setConfigFormat('mame_game_cfg');
+    if (profile.emulator === 'RetroArch') setConfigFormat('retroarch_snes9x_opt');
+    else if (profile.emulator === 'MAME') setConfigFormat('mame_game_cfg');
     else if (profile.emulator === 'Model2') setConfigFormat('model2');
     else if (profile.emulator === 'TeknoParrot') setConfigFormat('teknoparrot');
     else if (profile.emulator === 'PCSX2') setConfigFormat('pcsx2');
@@ -389,6 +391,43 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
 
         {/* Format Selector Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto text-xs pb-1">
+          {selectedProfile.emulator === 'RetroArch' && (
+            <>
+              <button
+                type="button"
+                onClick={() => setConfigFormat('retroarch_snes9x_opt')}
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                  configFormat === 'retroarch_snes9x_opt'
+                    ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
+                    : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                Snes9x 1.62.3: snes9x.opt
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfigFormat('retroarch_game_rmp')}
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                  configFormat === 'retroarch_game_rmp'
+                    ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
+                    : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                Remap: Snes9x.rmp (Super Scope)
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfigFormat('retroarch_cfg_snippet')}
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                  configFormat === 'retroarch_cfg_snippet'
+                    ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
+                    : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                retroarch.cfg (Lightgun)
+              </button>
+            </>
+          )}
           <button
             type="button"
             onClick={() => setConfigFormat('demulshooter')}
@@ -455,6 +494,32 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           >
             TeknoParrot: {selectedProfile.romName}.xml
           </button>
+          {selectedProfile.emulator !== 'RetroArch' && (
+            <>
+              <button
+                type="button"
+                onClick={() => setConfigFormat('retroarch_snes9x_opt')}
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                  configFormat === 'retroarch_snes9x_opt'
+                    ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
+                    : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                RetroArch: snes9x.opt
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfigFormat('retroarch_game_rmp')}
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                  configFormat === 'retroarch_game_rmp'
+                    ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
+                    : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                RetroArch: Snes9x.rmp
+              </button>
+            </>
+          )}
           <button
             type="button"
             onClick={() => setConfigFormat('vjoy')}

@@ -368,4 +368,252 @@ GunCon2_B = Keyboard:E
 GunCon2_Start = Keyboard:Return`,
     notes: 'Pedał USB można przypisać jako wyzwolenie zwoju Ninjutsu.',
   },
+
+  // --- RETROARCH - SNES9X 1.62.3 (SUPER SCOPE & JUSTIFIER) ---
+  {
+    id: 'battle_clash_snes',
+    name: 'Battle Clash (Space Bazooka)',
+    system: 'Super Nintendo (RetroArch - Snes9x 1.62.3)',
+    emulator: 'RetroArch',
+    romName: 'Battle Clash (USA)',
+    description: 'Kultowy mech-shooter na Nintendo Super Scope. Precyzyjne niszczenie osłon, ramion i słabych punktów robotów Standing Tanks za pomocą ładunków energetycznych.',
+    pedalAction: 'CUSTOM',
+    offscreenReload: false,
+    recommendedFilterStability: 0.35,
+    deadzone: 4,
+    sensitivityMultiplier: 1.0,
+    buttonMapping: {
+      trigger: 'Mouse Left (Fire / Super Scope Fire)',
+      actionOrReload: 'Mouse Right (Cursor Shot / Off-screen)',
+      pedal: 'Key Space (Turbo Toggle / Special Missile)',
+      start: 'Key Enter (Super Scope Pause)',
+      coin: 'Key F2 (RetroArch Menu)',
+    },
+    pcsx2ConfigSnippet: `; RetroArch Snes9x 1.62.3 Port 2 Super Scope
+input_libretro_device_p2 = "260"
+snes9x_lightgun_mode = "Lightgun"
+snes9x_superscope_crosshair = "2"
+snes9x_overscan = "disabled"`,
+    retroarchConfigSnippet: `; RetroArch Core Options: snes9x.opt (Snes9x 1.62.3)
+snes9x_lightgun_mode = "Lightgun"
+snes9x_superscope_crosshair = "2"
+snes9x_superscope_color = "0"
+snes9x_overscan = "disabled"
+snes9x_aspect_ratio = "4:3"
+snes9x_layer_1 = "enabled"
+snes9x_layer_2 = "enabled"
+snes9x_layer_3 = "enabled"
+snes9x_layer_4 = "enabled"
+snes9x_sprites = "enabled"
+
+; RetroArch Remap: Snes9x.rmp (Port 2 = Super Scope ID 260)
+input_libretro_device_p2 = "260"
+input_player2_mouse_index = "0"
+input_player2_gun_trigger = "mouse:1"
+input_player2_gun_offscreen_shot = "mouse:2"
+input_player2_gun_aux_a = "mouse:3"`,
+    notes: 'W RetroArch Snes9x 1.62.3 celownik Super Scope musi być podłączony pod Port 2 (Device Type: SuperScope / 260). Overscan musi być wyłączony (disabled), aby zachować rozdzielczość 256x224 w skali 1:1 bez przesunięcia pikseli.',
+  },
+  {
+    id: 'metal_combat_snes',
+    name: "Metal Combat: Falcon's Revenge",
+    system: 'Super Nintendo (RetroArch - Snes9x 1.62.3)',
+    emulator: 'RetroArch',
+    romName: "Metal Combat - Falcon's Revenge (USA)",
+    description: 'Najlepszy shooter na Super Scope w historii SNES. Kontynuacja Battle Clash z mechem ST Falcon, dodatkowymi bombami, pociskami plazmowymi i dynamicznym trybem walki 2-graczy.',
+    pedalAction: 'CUSTOM',
+    offscreenReload: false,
+    recommendedFilterStability: 0.30,
+    deadzone: 4,
+    sensitivityMultiplier: 1.0,
+    buttonMapping: {
+      trigger: 'Mouse Left (Fire Gun)',
+      actionOrReload: 'Mouse Right (Sub-Weapon / Missile)',
+      pedal: 'Key Space (Pedał: Bomba / Shield Deploy)',
+      start: 'Key Enter (Pause)',
+      coin: 'Key F2',
+    },
+    pcsx2ConfigSnippet: `; Snes9x 1.62.3 Super Scope
+input_libretro_device_p2 = "260"
+snes9x_lightgun_mode = "Lightgun"`,
+    retroarchConfigSnippet: `; RetroArch Core Options: snes9x.opt
+snes9x_lightgun_mode = "Lightgun"
+snes9x_superscope_crosshair = "2"
+snes9x_overscan = "disabled"
+snes9x_aspect_ratio = "4:3"
+
+; Remap Snes9x.rmp
+input_libretro_device_p2 = "260"
+input_player2_mouse_index = "0"
+input_player2_gun_trigger = "mouse:1"
+input_player2_gun_offscreen_shot = "mouse:2"`,
+    notes: 'Wymaga szybkiej reakcji i strzelania w słabe punkty. Filtr stabilności zalecany na poziomie 30%, aby umożliwić błyskawiczne manewry po całym ekranie.',
+  },
+  {
+    id: 'yoshis_safari_snes',
+    name: "Yoshi's Safari",
+    system: 'Super Nintendo (RetroArch - Snes9x 1.62.3)',
+    emulator: 'RetroArch',
+    romName: "Yoshi's Safari (USA)",
+    description: 'Pierwszoosobowa przygoda Mario i Yoshi w krainie Jewelry Land z widokiem FPV Mode 7. Zestrzel Koopalingów i Bowsera, unikając przeszkód na trasie.',
+    pedalAction: 'CUSTOM',
+    offscreenReload: false,
+    recommendedFilterStability: 0.38,
+    deadzone: 5,
+    sensitivityMultiplier: 1.0,
+    buttonMapping: {
+      trigger: 'Mouse Left (Shoot Super Scope)',
+      actionOrReload: 'Mouse Right (Yoshi Jump / Dash)',
+      pedal: 'Key Space (Pedał: Skok Yoshiego)',
+      start: 'Key Enter (Pause)',
+      coin: 'Key F2',
+    },
+    pcsx2ConfigSnippet: `; Snes9x 1.62.3 Super Scope
+input_libretro_device_p2 = "260"
+snes9x_lightgun_mode = "Lightgun"`,
+    retroarchConfigSnippet: `; RetroArch Core Options: snes9x.opt
+snes9x_lightgun_mode = "Lightgun"
+snes9x_superscope_crosshair = "2"
+snes9x_overscan = "disabled"
+snes9x_aspect_ratio = "4:3"
+
+; Remap
+input_libretro_device_p2 = "260"
+input_player2_mouse_index = "0"`,
+    notes: 'Pedał USB jest idealny do przypisania skoku Yoshiego (Jump) — prawa ręka celuje pistoletem G\'AIM\'E, noga wyzwala skoki nad przepaściami.',
+  },
+  {
+    id: 'super_scope_6_snes',
+    name: 'Super Scope 6',
+    system: 'Super Nintendo (RetroArch - Snes9x 1.62.3)',
+    emulator: 'RetroArch',
+    romName: 'Super Scope 6 (USA)',
+    description: 'Oficjalny zestaw 6 gier premierowych Super Scope (Blastris A/B, Mole Patrol, LazerBlazer: Intercept, Engage, Confront). Wzorcowy tytuł do testowania kalibracji sprzętowej.',
+    pedalAction: 'CUSTOM',
+    offscreenReload: false,
+    recommendedFilterStability: 0.32,
+    deadzone: 4,
+    sensitivityMultiplier: 1.0,
+    buttonMapping: {
+      trigger: 'Mouse Left (Fire)',
+      actionOrReload: 'Mouse Right (Cursor / Mode)',
+      pedal: 'Key Space (Turbo Fire)',
+      start: 'Key Enter (Pause)',
+      coin: 'Key F2',
+    },
+    pcsx2ConfigSnippet: `; Snes9x 1.62.3 Super Scope
+input_libretro_device_p2 = "260"
+snes9x_lightgun_mode = "Lightgun"`,
+    retroarchConfigSnippet: `; RetroArch Core Options: snes9x.opt
+snes9x_lightgun_mode = "Lightgun"
+snes9x_superscope_crosshair = "2"
+snes9x_overscan = "disabled"
+snes9x_aspect_ratio = "4:3"
+
+; Remap
+input_libretro_device_p2 = "260"
+input_player2_mouse_index = "0"`,
+    notes: 'Zawiera wbudowaną procedurę kalibracji Nintendo (Calibration Target) — można sprawdzić idealną zgodność homografii G\'AIM\'E z wewnętrznym celownikiem SNES.',
+  },
+  {
+    id: 'tin_star_snes',
+    name: 'Tin Star',
+    system: 'Super Nintendo (RetroArch - Snes9x 1.62.3)',
+    emulator: 'RetroArch',
+    romName: 'Tin Star (USA)',
+    description: 'Westernowy shooter na Super Scope / Mysz SNES. Strzelaniny w saloonach, pojedynki w samo południe i ochrona dyliżansów przed bandytami Black Bart.',
+    pedalAction: 'RELOAD',
+    offscreenReload: true,
+    recommendedFilterStability: 0.35,
+    deadzone: 5,
+    sensitivityMultiplier: 1.0,
+    buttonMapping: {
+      trigger: 'Mouse Left (Shoot)',
+      actionOrReload: 'Mouse Right / Off-screen (Reload)',
+      pedal: 'Key Space (Pedał: Przeładowanie)',
+      start: 'Key Enter (Pause)',
+      coin: 'Key F2',
+    },
+    pcsx2ConfigSnippet: `; Snes9x 1.62.3 Super Scope
+input_libretro_device_p2 = "260"
+snes9x_lightgun_mode = "Lightgun"`,
+    retroarchConfigSnippet: `; RetroArch Core Options: snes9x.opt
+snes9x_lightgun_mode = "Lightgun"
+snes9x_superscope_crosshair = "2"
+snes9x_overscan = "disabled"
+
+; Remap
+input_libretro_device_p2 = "260"
+input_player2_mouse_index = "0"`,
+    notes: 'Obsługuje przeładowanie rewolweru poza ekranem (Off-screen Reload) lub pedałem nożnym.',
+  },
+  {
+    id: 'terminator2_snes',
+    name: 'Terminator 2: The Arcade Game (SNES)',
+    system: 'Super Nintendo (RetroArch - Snes9x 1.62.3)',
+    emulator: 'RetroArch',
+    romName: 'Terminator 2 - Judgment Day (USA)',
+    description: 'Wierna adaptacja zręcznościowego hitu arcade na Super Nintendo z obsługą pistoletu Super Scope. Odpieraj hordy Endo-szkieletów i czołgów Hunter Killer.',
+    pedalAction: 'CUSTOM',
+    offscreenReload: false,
+    recommendedFilterStability: 0.33,
+    deadzone: 5,
+    sensitivityMultiplier: 1.0,
+    buttonMapping: {
+      trigger: 'Mouse Left (Rapid Fire Gun)',
+      actionOrReload: 'Mouse Right (Missile Launcher)',
+      pedal: 'Key Space (Pedał: Wyrzutnia rakiet)',
+      start: 'Key Enter (Pause)',
+      coin: 'Key F2',
+    },
+    pcsx2ConfigSnippet: `; Snes9x 1.62.3 Super Scope
+input_libretro_device_p2 = "260"
+snes9x_lightgun_mode = "Lightgun"`,
+    retroarchConfigSnippet: `; RetroArch Core Options: snes9x.opt
+snes9x_lightgun_mode = "Lightgun"
+snes9x_superscope_crosshair = "2"
+snes9x_overscan = "disabled"
+
+; Remap
+input_libretro_device_p2 = "260"
+input_player2_mouse_index = "0"`,
+    notes: 'Drugi przycisk pistoletu lub pedał USB wyzwala rakietnicę niszczącą całe grupy robotów Skynetu.',
+  },
+  {
+    id: 'lethal_enforcers_snes',
+    name: 'Lethal Enforcers (SNES Justifier)',
+    system: 'Super Nintendo (RetroArch - Snes9x 1.62.3)',
+    emulator: 'RetroArch',
+    romName: 'Lethal Enforcers (USA)',
+    description: 'Hit od Konami z digitalizowanymi aktorami. W wersji SNES wykorzystuje pistolet Konami Justifier (niebieski rewolwer), podłączany pod Port 2.',
+    pedalAction: 'RELOAD',
+    offscreenReload: true,
+    recommendedFilterStability: 0.36,
+    deadzone: 6,
+    sensitivityMultiplier: 1.0,
+    buttonMapping: {
+      trigger: 'Mouse Left (Shoot)',
+      actionOrReload: 'Mouse Right / Off-screen (Reload)',
+      pedal: 'Key Space (Pedał: Przeładuj magazynek)',
+      start: 'Key Enter (Start)',
+      coin: 'Key F2',
+    },
+    pcsx2ConfigSnippet: `; Snes9x 1.62.3 Konami Justifier (Port 2 Device Type 516)
+input_libretro_device_p2 = "516"
+snes9x_lightgun_mode = "Lightgun"
+snes9x_justifier_crosshair = "2"`,
+    retroarchConfigSnippet: `; RetroArch Core Options: snes9x.opt (Konami Justifier)
+snes9x_lightgun_mode = "Lightgun"
+snes9x_justifier_crosshair = "2"
+snes9x_justifier1_color = "0"
+snes9x_overscan = "disabled"
+
+; Remap Snes9x.rmp (Port 2 = Justifier ID 516)
+input_libretro_device_p2 = "516"
+input_player2_mouse_index = "0"
+input_player2_gun_trigger = "mouse:1"
+input_player2_gun_offscreen_shot = "mouse:2"`,
+    notes: 'Dla gry Lethal Enforcers emulator Snes9x wymaga typu urządzenia Konami Justifier (ID 516) zamiast Super Scope (ID 260). Przeładowanie odbywa się poza ekranem lub pedałem.',
+  },
 ];
+

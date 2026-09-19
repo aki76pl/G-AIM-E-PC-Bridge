@@ -73,7 +73,7 @@ export interface MonitorProfile {
   scaleFactor: number;
 }
 
-export type EmulatorTarget = 'DemulShooter' | 'MAME' | 'PCSX2' | 'Model2' | 'TeknoParrot' | 'vJoy';
+export type EmulatorTarget = 'DemulShooter' | 'MAME' | 'PCSX2' | 'Model2' | 'TeknoParrot' | 'RetroArch' | 'vJoy';
 
 export interface ButtonMapping {
   trigger: string;
@@ -100,6 +100,7 @@ export interface GameProfile {
   demulShooterTarget?: string;
   pcsx2ConfigSnippet: string;
   mameRomSnippet?: string;
+  retroarchConfigSnippet?: string;
   notes?: string;
 }
 
