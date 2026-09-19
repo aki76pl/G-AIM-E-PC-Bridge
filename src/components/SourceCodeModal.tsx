@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Code2, Download, Copy, Check, FileCode, Folder, X, ShieldCheck } from 'lucide-react';
 import { CSHARP_PROJECT_FILES } from '../csharp-project/sources';
 import { CSharpSourceFile } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface SourceCodeModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const SourceCodeModal: React.FC<SourceCodeModalProps> = ({
   onDownloadZip,
   isDownloadingZip,
 }) => {
+  const { t } = useLanguage();
   const [selectedFile, setSelectedFile] = useState<CSharpSourceFile>(CSHARP_PROJECT_FILES[0]);
   const [copied, setCopied] = useState(false);
 
@@ -38,10 +40,10 @@ export const SourceCodeModal: React.FC<SourceCodeModalProps> = ({
             </div>
             <div>
               <h2 className="font-['Chakra_Petch'] font-bold text-lg text-white">
-                KOD ŹRÓDŁOWY C# / .NET 8 WPF (VISUAL STUDIO 2022)
+                {t.sourceModalTitle}
               </h2>
               <p className="text-xs text-neutral-400">
-                Kompletny, kompilowalny projekt Windows gotowy do uruchomienia (F5) w Visual Studio
+                {t.sourceModalSubtitle}
               </p>
             </div>
           </div>
@@ -51,15 +53,15 @@ export const SourceCodeModal: React.FC<SourceCodeModalProps> = ({
               type="button"
               onClick={onDownloadZip}
               disabled={isDownloadingZip}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              <span>{isDownloadingZip ? 'Pakowanie...' : 'Pobierz Paczkę ZIP'}</span>
+              <span>{isDownloadingZip ? t.packagingBtn : t.downloadZipBtn}</span>
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white"
+              className="p-2 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -71,7 +73,7 @@ export const SourceCodeModal: React.FC<SourceCodeModalProps> = ({
           {/* File Tree Sidebar */}
           <div className="w-full md:w-72 border-r border-neutral-800 bg-neutral-950/60 p-3 overflow-y-auto space-y-1">
             <div className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider px-2 py-1">
-              Pliki Projektu
+              {t.projectFilesTitle}
             </div>
 
             {CSHARP_PROJECT_FILES.map((file) => (
@@ -79,7 +81,7 @@ export const SourceCodeModal: React.FC<SourceCodeModalProps> = ({
                 key={file.path}
                 type="button"
                 onClick={() => setSelectedFile(file)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-mono flex items-center justify-between transition-colors ${
+                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-mono flex items-center justify-between transition-colors cursor-pointer ${
                   selectedFile.path === file.path
                     ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
                     : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200'
@@ -107,10 +109,10 @@ export const SourceCodeModal: React.FC<SourceCodeModalProps> = ({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white px-2.5 py-1 rounded bg-neutral-900 border border-neutral-800"
+                className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white px-2.5 py-1 rounded bg-neutral-900 border border-neutral-800 cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Skopiowano' : 'Kopiuj'}</span>
+                <span>{copied ? t.copiedBtn : t.copyBtn}</span>
               </button>
             </div>
 

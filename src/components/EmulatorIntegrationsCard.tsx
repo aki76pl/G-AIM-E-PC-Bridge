@@ -21,6 +21,7 @@ import {
   generateConfigForFormat,
   downloadConfigFile,
 } from '../services/configGenerator';
+import { useLanguage } from '../context/LanguageContext';
 
 interface EmulatorIntegrationsCardProps {
   selectedProfile: GameProfile;
@@ -31,16 +32,6 @@ interface EmulatorIntegrationsCardProps {
   onApplyPresetSensitivity?: (stability: number) => void;
 }
 
-const EMULATOR_CATEGORIES: { id: 'ALL' | EmulatorTarget; label: string }[] = [
-  { id: 'ALL', label: 'Wszystkie' },
-  { id: 'RetroArch', label: 'RetroArch (Snes9x)' },
-  { id: 'DemulShooter', label: 'DemulShooter' },
-  { id: 'MAME', label: 'MAME' },
-  { id: 'Model2', label: 'Model 2' },
-  { id: 'TeknoParrot', label: 'TeknoParrot' },
-  { id: 'PCSX2', label: 'PCSX2' },
-];
-
 export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> = ({
   selectedProfile,
   onSelectProfile,
@@ -49,10 +40,21 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
   selectedMonitor,
   onApplyPresetSensitivity,
 }) => {
+  const { t, language } = useLanguage();
   const [activeCategory, setActiveCategory] = useState<'ALL' | EmulatorTarget>('ALL');
   const [configFormat, setConfigFormat] = useState<ConfigFormat>('demulshooter');
   const [copiedConfig, setCopiedConfig] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
+
+  const emulatorCategories = useMemo(() => [
+    { id: 'ALL' as const, label: t.catAll },
+    { id: 'RetroArch' as const, label: 'RetroArch (Snes9x)' },
+    { id: 'DemulShooter' as const, label: 'DemulShooter' },
+    { id: 'MAME' as const, label: 'MAME' },
+    { id: 'Model2' as const, label: 'Model 2' },
+    { id: 'TeknoParrot' as const, label: 'TeknoParrot' },
+    { id: 'PCSX2' as const, label: 'PCSX2' },
+  ], [t.catAll]);
 
   // Interactive fine-tuning overrides
   const [customDeadzone, setCustomDeadzone] = useState<number>(selectedProfile.deadzone ?? 8);
@@ -132,14 +134,14 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-['Chakra_Petch'] font-bold text-sm tracking-wide text-neutral-100 uppercase">
-                INTEGRACJA Z EMULATORAMI & ARCADE
+                {t.emulatorCardTitle}
               </h3>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-cyan-950/80 text-cyan-300 border border-cyan-800">
                 DemulShooter / MAME / vJoy
               </span>
             </div>
             <p className="text-xs text-neutral-400">
-              Profile gier arcade, presety czułości, martwych stref i generator plików konfiguracyjnych .ini / .cfg
+              {t.emulatorCardSubtitle}
             </p>
           </div>
         </div>
@@ -166,12 +168,12 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
 
       {/* Emulator Filter Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-        {EMULATOR_CATEGORIES.map((cat) => (
+        {emulatorCategories.map((cat) => (
           <button
             key={cat.id}
             type="button"
             onClick={() => setActiveCategory(cat.id)}
-            className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
               activeCategory === cat.id
                 ? 'bg-cyan-500 text-neutral-950 font-bold shadow-md shadow-cyan-500/20'
                 : 'bg-neutral-950 text-neutral-400 hover:text-neutral-200 border border-neutral-800 hover:border-neutral-700'
@@ -191,7 +193,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               key={p.id}
               type="button"
               onClick={() => handleSelect(p)}
-              className={`text-left p-2.5 rounded-lg border transition-all flex flex-col justify-between ${
+              className={`text-left p-2.5 rounded-lg border transition-all flex flex-col justify-between cursor-pointer ${
                 isSelected
                   ? 'bg-cyan-950/40 border-cyan-500 shadow-sm shadow-cyan-500/20'
                   : 'bg-neutral-950/60 border-neutral-800/80 hover:border-neutral-700 hover:bg-neutral-950'
@@ -239,8 +241,8 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               <button
                 type="button"
                 onClick={handleCopyCmd}
-                title="Kopiuj komendę uruchomieniową DemulShooter"
-                className="text-neutral-400 hover:text-cyan-300 ml-1"
+                title={t.copyLaunchTooltip}
+                className="text-neutral-400 hover:text-cyan-300 ml-1 cursor-pointer"
               >
                 {copiedCmd ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
@@ -253,7 +255,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           {/* Deadzone */}
           <div className="bg-neutral-900/70 p-2.5 rounded-lg border border-neutral-800 flex flex-col gap-1.5">
             <div className="flex justify-between items-center text-[11px]">
-              <span className="text-neutral-400 font-medium">Martwa strefa (Deadzone):</span>
+              <span className="text-neutral-400 font-medium">{t.deadzoneVal}</span>
               <span className="font-mono text-cyan-400 font-bold">{customDeadzone} RAW</span>
             </div>
             <input
@@ -265,13 +267,13 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               onChange={(e) => setCustomDeadzone(Number(e.target.value))}
               className="w-full accent-cyan-400 h-1.5 bg-neutral-800 rounded cursor-pointer"
             />
-            <span className="text-[10px] text-neutral-500">Tłumi mikro-drgania matrycy w spoczynku</span>
+            <span className="text-[10px] text-neutral-500">{t.suppressRestingJitter}</span>
           </div>
 
           {/* Sensitivity Multiplier */}
           <div className="bg-neutral-900/70 p-2.5 rounded-lg border border-neutral-800 flex flex-col gap-1.5">
             <div className="flex justify-between items-center text-[11px]">
-              <span className="text-neutral-400 font-medium">Mnożnik czułości (Speed):</span>
+              <span className="text-neutral-400 font-medium">{t.sensitivityVal}</span>
               <span className="font-mono text-cyan-400 font-bold">{customSensitivity.toFixed(2)}x</span>
             </div>
             <input
@@ -283,13 +285,13 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               onChange={(e) => setCustomSensitivity(Number(e.target.value))}
               className="w-full accent-cyan-400 h-1.5 bg-neutral-800 rounded cursor-pointer"
             />
-            <span className="text-[10px] text-neutral-500">Szybkość ruchu celownika po ekranie</span>
+            <span className="text-[10px] text-neutral-500">{t.crosshairSpeed}</span>
           </div>
 
           {/* Recommended Filter & Action */}
           <div className="bg-neutral-900/70 p-2.5 rounded-lg border border-neutral-800 flex flex-col justify-between">
             <div className="flex justify-between items-center text-[11px]">
-              <span className="text-neutral-400">Rekomendowany filtr:</span>
+              <span className="text-neutral-400">{t.recommendedFilterLabel}</span>
               <span className="font-mono text-emerald-400 font-bold">
                 {Math.round(selectedProfile.recommendedFilterStability * 100)}%
               </span>
@@ -298,10 +300,10 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               <button
                 type="button"
                 onClick={() => onApplyPresetSensitivity(selectedProfile.recommendedFilterStability)}
-                className="mt-1 flex items-center justify-center gap-1.5 text-[11px] font-semibold bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-800/80 rounded py-1 transition-colors"
+                className="mt-1 flex items-center justify-center gap-1.5 text-[11px] font-semibold bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-800/80 rounded py-1 transition-colors cursor-pointer"
               >
                 <Sparkles className="w-3 h-3" />
-                <span>Zastosuj do potoku</span>
+                <span>{t.applyToPipeline}</span>
               </button>
             )}
           </div>
@@ -309,13 +311,13 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           {/* Pedal & Reload Features */}
           <div className="bg-neutral-900/70 p-2.5 rounded-lg border border-neutral-800 flex flex-col justify-between text-[11px]">
             <div className="flex justify-between">
-              <span className="text-neutral-400">Akcja pedału:</span>
+              <span className="text-neutral-400">{t.pedalActionLabel}</span>
               <strong className="text-amber-300 font-semibold">{selectedProfile.pedalAction}</strong>
             </div>
             <div className="flex justify-between">
-              <span className="text-neutral-400">Offscreen reload:</span>
+              <span className="text-neutral-400">{t.pcsx2OffscreenReload}</span>
               <strong className={selectedProfile.offscreenReload ? 'text-emerald-400' : 'text-neutral-500'}>
-                {selectedProfile.offscreenReload ? 'TAK' : 'NIE'}
+                {selectedProfile.offscreenReload ? t.pcsx2Yes : t.pcsx2No}
               </strong>
             </div>
           </div>
@@ -325,27 +327,27 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
         {selectedProfile.buttonMapping && (
           <div>
             <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block mb-1.5">
-              Zmapowane wejścia pistoletu i pedału:
+              {t.mappedInputsTitle}
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 text-xs">
               <div className="p-2 rounded bg-neutral-900 border border-neutral-800 flex justify-between items-center">
-                <span className="text-neutral-400">Spust (Trigger):</span>
+                <span className="text-neutral-400">{t.triggerKey}</span>
                 <span className="font-mono text-cyan-300 font-bold">{selectedProfile.buttonMapping.trigger}</span>
               </div>
               <div className="p-2 rounded bg-neutral-900 border border-neutral-800 flex justify-between items-center">
-                <span className="text-neutral-400">Przeład./Akcja:</span>
+                <span className="text-neutral-400">{t.reloadActionKey}</span>
                 <span className="font-mono text-cyan-300 font-bold">{selectedProfile.buttonMapping.actionOrReload}</span>
               </div>
               <div className="p-2 rounded bg-neutral-900 border border-neutral-800 flex justify-between items-center">
-                <span className="text-neutral-400">Pedał USB:</span>
+                <span className="text-neutral-400">{t.usbPedalKey}</span>
                 <span className="font-mono text-amber-300 font-bold">{selectedProfile.buttonMapping.pedal}</span>
               </div>
               <div className="p-2 rounded bg-neutral-900 border border-neutral-800 flex justify-between items-center">
-                <span className="text-neutral-400">Start / 1P:</span>
+                <span className="text-neutral-400">{t.startKey}</span>
                 <span className="font-mono text-neutral-200 font-semibold">{selectedProfile.buttonMapping.start}</span>
               </div>
               <div className="p-2 rounded bg-neutral-900 border border-neutral-800 flex justify-between items-center">
-                <span className="text-neutral-400">Coin / Kredyt:</span>
+                <span className="text-neutral-400">{t.coinKey}</span>
                 <span className="font-mono text-neutral-200 font-semibold">{selectedProfile.buttonMapping.coin}</span>
               </div>
             </div>
@@ -360,10 +362,10 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
             <FileCode className="w-4 h-4 text-cyan-400" />
             <div>
               <h4 className="font-bold text-xs text-neutral-200 uppercase tracking-wide">
-                GENERATOR PLIKÓW KONFIGURACYJNYCH (.INI / .CFG / .XML)
+                {t.generatorTitle}
               </h4>
               <p className="text-[11px] text-neutral-400">
-                Wartości kalibracji obu graczy (P1 i P2) są automatycznie wstrzykiwane do wygenerowanego pliku
+                {t.generatorDesc}
               </p>
             </div>
           </div>
@@ -376,7 +378,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               className="flex items-center gap-1.5 text-xs text-neutral-200 hover:text-cyan-300 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-700 hover:border-cyan-500 transition-all cursor-pointer"
             >
               {copiedConfig ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedConfig ? 'Skopiowano!' : 'Kopiuj treść'}</span>
+              <span>{copiedConfig ? t.copiedBtn : t.copyContent}</span>
             </button>
             <button
               type="button"
@@ -384,7 +386,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               className="flex items-center gap-1.5 text-xs font-semibold text-neutral-950 bg-cyan-400 hover:bg-cyan-300 px-3 py-1.5 rounded-lg transition-all shadow-md shadow-cyan-400/20 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Pobierz {generatedConfig.fileName}</span>
+              <span>{language === 'pl' ? 'Pobierz' : 'Download'} {generatedConfig.fileName}</span>
             </button>
           </div>
         </div>
@@ -396,7 +398,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               <button
                 type="button"
                 onClick={() => setConfigFormat('retroarch_snes9x_opt')}
-                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
                   configFormat === 'retroarch_snes9x_opt'
                     ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                     : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -407,7 +409,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               <button
                 type="button"
                 onClick={() => setConfigFormat('retroarch_game_rmp')}
-                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
                   configFormat === 'retroarch_game_rmp'
                     ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                     : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -418,7 +420,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               <button
                 type="button"
                 onClick={() => setConfigFormat('retroarch_cfg_snippet')}
-                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
                   configFormat === 'retroarch_cfg_snippet'
                     ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                     : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -431,7 +433,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           <button
             type="button"
             onClick={() => setConfigFormat('demulshooter')}
-            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
               configFormat === 'demulshooter'
                 ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                 : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -442,7 +444,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           <button
             type="button"
             onClick={() => setConfigFormat('mame_game_cfg')}
-            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
               configFormat === 'mame_game_cfg'
                 ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                 : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -453,7 +455,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           <button
             type="button"
             onClick={() => setConfigFormat('mame_ctrlr_ini')}
-            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
               configFormat === 'mame_ctrlr_ini'
                 ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                 : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -464,7 +466,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           <button
             type="button"
             onClick={() => setConfigFormat('pcsx2')}
-            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
               configFormat === 'pcsx2'
                 ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                 : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -475,7 +477,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           <button
             type="button"
             onClick={() => setConfigFormat('model2')}
-            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
               configFormat === 'model2'
                 ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                 : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -486,7 +488,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           <button
             type="button"
             onClick={() => setConfigFormat('teknoparrot')}
-            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
               configFormat === 'teknoparrot'
                 ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                 : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -499,7 +501,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               <button
                 type="button"
                 onClick={() => setConfigFormat('retroarch_snes9x_opt')}
-                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
                   configFormat === 'retroarch_snes9x_opt'
                     ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                     : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -510,7 +512,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
               <button
                 type="button"
                 onClick={() => setConfigFormat('retroarch_game_rmp')}
-                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+                className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
                   configFormat === 'retroarch_game_rmp'
                     ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                     : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -523,7 +525,7 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           <button
             type="button"
             onClick={() => setConfigFormat('vjoy')}
-            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap ${
+            className={`px-3 py-1 rounded-md transition-all font-medium whitespace-nowrap cursor-pointer ${
               configFormat === 'vjoy'
                 ? 'bg-neutral-800 text-cyan-300 font-bold border border-cyan-500/50'
                 : 'bg-neutral-900/60 text-neutral-400 hover:text-neutral-200'
@@ -548,20 +550,20 @@ export const EmulatorIntegrationsCard: React.FC<EmulatorIntegrationsCardProps> =
           <div className="flex items-center gap-2">
             <Info className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
             <span className="text-neutral-300">
-              Docelowa lokalizacja: <strong className="text-cyan-300">{generatedConfig.installLocation}</strong>
+              {t.destinationLocation} <strong className="text-cyan-300">{generatedConfig.installLocation}</strong>
             </span>
           </div>
           <div className="flex items-center gap-3 text-[10px]">
             <span className="flex items-center gap-1 text-neutral-400">
               P1 Calib:
               <strong className={calibrationP1.isCalibrated ? 'text-emerald-400' : 'text-amber-400'}>
-                {calibrationP1.isCalibrated ? 'Aktywna (Własna)' : 'Domyślna (Standard)'}
+                {calibrationP1.isCalibrated ? t.activeCustom : t.defaultStandard}
               </strong>
             </span>
             <span className="flex items-center gap-1 text-neutral-400">
               P2 Calib:
               <strong className={calibrationP2.isCalibrated ? 'text-emerald-400' : 'text-neutral-500'}>
-                {calibrationP2.isCalibrated ? 'Aktywna' : 'Domyślna'}
+                {calibrationP2.isCalibrated ? t.activeStatusSingle : t.defaultStatusSingle}
               </strong>
             </span>
           </div>

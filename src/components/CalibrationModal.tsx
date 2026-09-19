@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { 
   Crosshair, 
   CheckCircle2, 
@@ -19,6 +19,7 @@ import { CalibrationCorner, CalibrationData, Point2D } from '../types';
 import { computeHomography } from '../services/calibration';
 import { CalibrationQuickStart, QUICK_START_GUIDES } from './CalibrationQuickStart';
 import { useLanguage } from '../context/LanguageContext';
+import { Translations } from '../i18n/translations';
 
 interface CalibrationModalProps {
   isOpen: boolean;
@@ -29,11 +30,11 @@ interface CalibrationModalProps {
   isTriggerPressed: boolean;
 }
 
-const CORNERS: { 
+const CORNER_CONFIGS: { 
   id: CalibrationCorner; 
-  name: string;
-  label: string; 
-  sub: string; 
+  nameKey: keyof Translations;
+  labelKey: keyof Translations; 
+  subKey: keyof Translations; 
   xPct: number; 
   yPct: number;
   expectedRawX: number;
@@ -41,9 +42,9 @@ const CORNERS: {
 }[] = [
   { 
     id: 'TL', 
-    name: 'Point 1 (Top-Left)',
-    label: 'Punkt 1: Lewy Górny Róg (Top-Left)', 
-    sub: 'Wyceluj w czerwony celownik w lewym górnym rogu', 
+    nameKey: 'calibCornerTL_name',
+    labelKey: 'calibCornerTL_label', 
+    subKey: 'calibCornerTL_sub', 
     xPct: 10, 
     yPct: 10,
     expectedRawX: 1000,
@@ -51,9 +52,9 @@ const CORNERS: {
   },
   { 
     id: 'TR', 
-    name: 'Point 2 (Top-Right)',
-    label: 'Punkt 2: Prawy Górny Róg (Top-Right)', 
-    sub: 'Wyceluj w prawy górny narożnik', 
+    nameKey: 'calibCornerTR_name',
+    labelKey: 'calibCornerTR_label', 
+    subKey: 'calibCornerTR_sub', 
     xPct: 90, 
     yPct: 10,
     expectedRawX: 9000,
@@ -61,9 +62,9 @@ const CORNERS: {
   },
   { 
     id: 'BR', 
-    name: 'Point 3 (Bottom-Right)',
-    label: 'Punkt 3: Prawy Dolny Róg (Bottom-Right)', 
-    sub: 'Wyceluj w prawy dolny narożnik', 
+    nameKey: 'calibCornerBR_name',
+    labelKey: 'calibCornerBR_label', 
+    subKey: 'calibCornerBR_sub', 
     xPct: 90, 
     yPct: 90,
     expectedRawX: 9000,
@@ -71,9 +72,9 @@ const CORNERS: {
   },
   { 
     id: 'BL', 
-    name: 'Point 4 (Bottom-Left)',
-    label: 'Punkt 4: Lewy Dolny Róg (Bottom-Left)', 
-    sub: 'Wyceluj w lewy dolny narożnik', 
+    nameKey: 'calibCornerBL_name',
+    labelKey: 'calibCornerBL_label', 
+    subKey: 'calibCornerBL_sub', 
     xPct: 10, 
     yPct: 90,
     expectedRawX: 1000,
@@ -90,6 +91,20 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
   isTriggerPressed,
 }) => {
   const { t, language } = useLanguage();
+
+  const CORNERS = useMemo(() => {
+    return CORNER_CONFIGS.map(cfg => ({
+      id: cfg.id,
+      name: (t[cfg.nameKey] as string) || cfg.id,
+      label: (t[cfg.labelKey] as string) || cfg.id,
+      sub: (t[cfg.subKey] as string) || '',
+      xPct: cfg.xPct,
+      yPct: cfg.yPct,
+      expectedRawX: cfg.expectedRawX,
+      expectedRawY: cfg.expectedRawY,
+    }));
+  }, [t]);
+
   const [isQuickStart, setIsQuickStart] = useState<boolean>(true);
   const [mode, setMode] = useState<'manual' | 'auto-detect'>('manual');
   const [step, setStep] = useState<number>(0);
@@ -270,7 +285,7 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
     } else {
       finalizeCalibration(nextPoints, nextMetrics);
     }
-  }, [collectedPoints, cornerMetrics, finalizeCalibration, triggerFlash]);
+  }, [CORNERS, collectedPoints, cornerMetrics, finalizeCalibration, triggerFlash]);
 
   // Handle trigger pull in manual mode
   useEffect(() => {
@@ -470,7 +485,7 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
               type="button"
               onClick={handleReset}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 text-xs text-neutral-300 hover:text-white cursor-pointer"
-              title="Resetuj wszystkie punkty"
+              title={t.calibResetAllTitle}
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>{t.calibResetBtn || 'Resetuj'}</span>
@@ -518,7 +533,7 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
                       ) : (
                         <Clock className="w-3.5 h-3.5 text-neutral-600 shrink-0" />
                       )}
-                      Point {index + 1}: {c.id}
+                      {t.calibPointLabel} {index + 1}: {c.id}
                     </span>
 
                     {/* Status Badge */}
@@ -532,14 +547,14 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
                       }`}
                     >
                       {isCaptured
-                        ? 'Captured'
+                        ? t.calibStatusCaptured
                         : isActive
                         ? mode === 'auto-detect'
                           ? isHovering
                             ? `Hover ${remainingSeconds}s`
-                            : 'Waiting'
-                          : 'Active'
-                        : 'Waiting'}
+                            : t.calibStatusWaiting
+                          : t.calibStatusActive
+                        : t.calibStatusWaiting}
                     </span>
                   </div>
 
@@ -552,12 +567,12 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
                       <span className="text-cyan-300">
                         {mode === 'auto-detect'
                           ? isHovering
-                            ? `Zbieranie (${cornerSamples.length} prób.)`
-                            : 'Przetrzymaj 3s'
-                          : 'Wyceluj i naciśnij spust'}
+                            ? t.calibSamplingCount.replace('{count}', String(cornerSamples.length))
+                            : t.calibHold3s
+                          : t.calibAimAndShoot}
                       </span>
                     ) : (
-                      <span className="text-neutral-500">Oczekuje w kolejce</span>
+                      <span className="text-neutral-500">{t.calibStatusWaiting}</span>
                     )}
                   </div>
 
@@ -637,7 +652,7 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
                 <span className={`text-xs font-mono uppercase font-bold tracking-widest px-2 py-0.5 rounded ${
                   mode === 'auto-detect' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                 }`}>
-                  KROK {step + 1} Z 4 &bull; {currentCorner.name}
+                  {t.calibStepOf.replace('{step}', String(step + 1))} &bull; {currentCorner.name}
                 </span>
               </div>
 
@@ -679,10 +694,10 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-cyan-300 flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                      Auto-Wykrywanie Czułości:
+                      {t.calibModeAutoDetect}:
                     </span>
                     <span className="font-mono text-cyan-400 font-bold">
-                      {isHovering ? `Zbieranie: ${remainingSeconds}s` : 'Najedź na narożnik'}
+                      {isHovering ? `${t.calibSamplingCount.split('(')[0].trim()}: ${remainingSeconds}s` : t.calibHoverCorner}
                     </span>
                   </div>
 
@@ -696,23 +711,21 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
                   <p className="text-[11px] text-neutral-400">
                     {isHovering ? (
                       <span className="text-emerald-300 font-medium animate-pulse">
-                        ● Trzymaj celownik stabilnie... Próbki: {cornerSamples.length}
+                        ● {t.calibHoldSteady.replace('{count}', String(cornerSamples.length))}
                       </span>
                     ) : (
-                      <span>💡 Przytrzymaj celownik w kółku przez 3 sekundy. Zostanie zebrana próbka szumu i wyznaczona czułość.</span>
+                      <span>💡 {t.calibAutoDetectHelp}</span>
                     )}
                   </p>
                 </div>
               ) : (
                 <div className="inline-block font-mono text-xs bg-neutral-950 px-3 py-1 rounded text-cyan-300 border border-neutral-800">
-                  Bieżące RAW: X={currentRawX} | Y={currentRawY}
+                  {t.calibCurrentRaw} X={currentRawX} | Y={currentRawY}
                 </div>
               )}
 
               <div className="text-[11px] text-neutral-400 pt-1 flex items-center justify-center gap-2">
-                <span>💡 Wciśnij</span>
-                <kbd className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-cyan-300 font-mono text-[10px]">SPACJĘ</kbd>
-                <span>lub strzel pistoletem G'AIM'E</span>
+                <span>{t.calibPressSpacePrompt}</span>
               </div>
             </div>
           ) : (
@@ -726,9 +739,9 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-white">Kalibracja Zakończona Sukcesem!</h3>
+                <h3 className="text-xl font-bold text-white">{t.calibSuccessTitle}</h3>
                 <p className="text-xs text-neutral-300 mt-1">
-                  Wszystkie 4 punkty narożne zostały pomyślnie przechwycone i skompensowane.
+                  {t.calibSuccessDesc}
                 </p>
               </div>
 
@@ -738,7 +751,7 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
                   <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
                     <span className="text-cyan-400 font-bold flex items-center gap-1.5">
                       <Activity className="w-4 h-4 text-cyan-400" />
-                      WYKRYTE ZAKRESY I PROFIL CZUŁOŚCI:
+                      {t.calibDetectedRanges}
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
                       Auto-Range Engine
@@ -747,43 +760,43 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
 
                   <div className="grid grid-cols-2 gap-3 text-neutral-300">
                     <div className="bg-neutral-900/80 p-2.5 rounded border border-neutral-800">
-                      <div className="text-neutral-500 text-[10px] font-sans uppercase">Zakres Poziomy (Oś X)</div>
+                      <div className="text-neutral-500 text-[10px] font-sans uppercase">{t.calibHorizontalRange}</div>
                       <div className="text-cyan-300 font-bold mt-0.5">
                         {computedResult.optimalRanges.minX} &rarr; {computedResult.optimalRanges.maxX}
                       </div>
                       <div className="text-[10px] text-neutral-400 mt-0.5">
-                        Rozpiętość: {computedResult.optimalRanges.rangeX} jedn. RAW
+                        {t.calibSpan} {computedResult.optimalRanges.rangeX} {t.calibRawUnits}
                       </div>
                     </div>
 
                     <div className="bg-neutral-900/80 p-2.5 rounded border border-neutral-800">
-                      <div className="text-neutral-500 text-[10px] font-sans uppercase">Zakres Pionowy (Oś Y)</div>
+                      <div className="text-neutral-500 text-[10px] font-sans uppercase">{t.calibVerticalRange}</div>
                       <div className="text-cyan-300 font-bold mt-0.5">
                         {computedResult.optimalRanges.minY} &rarr; {computedResult.optimalRanges.maxY}
                       </div>
                       <div className="text-[10px] text-neutral-400 mt-0.5">
-                        Rozpiętość: {computedResult.optimalRanges.rangeY} jedn. RAW
+                        {t.calibSpan} {computedResult.optimalRanges.rangeY} {t.calibRawUnits}
                       </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 pt-1 text-center">
                     <div className="bg-neutral-900/60 p-2 rounded border border-neutral-800">
-                      <div className="text-[10px] text-neutral-500">POZIOM SZUMU</div>
+                      <div className="text-[10px] text-neutral-500">{t.calibNoiseLevel}</div>
                       <div className="text-emerald-400 font-bold text-xs mt-0.5">
                         &plusmn;{computedResult.optimalRanges.jitterVariance} RAW
                       </div>
                     </div>
                     <div className="bg-neutral-900/60 p-2 rounded border border-neutral-800">
-                      <div className="text-[10px] text-neutral-500">POLE WIDZENIA</div>
+                      <div className="text-[10px] text-neutral-500">{t.calibFieldOfView}</div>
                       <div className="text-cyan-300 font-bold text-xs mt-0.5">
-                        {computedResult.optimalRanges.coveragePct}% matrycy
+                        {computedResult.optimalRanges.coveragePct}% {t.calibOfSensor}
                       </div>
                     </div>
                     <div className="bg-neutral-900/60 p-2 rounded border border-neutral-800">
-                      <div className="text-[10px] text-neutral-500">REK. FILTR</div>
+                      <div className="text-[10px] text-neutral-500">{t.calibRecFilter}</div>
                       <div className="text-amber-400 font-bold text-xs mt-0.5">
-                        {(computedResult.optimalRanges.recommendedFilterStability * 100).toFixed(0)}% stab.
+                        {(computedResult.optimalRanges.recommendedFilterStability * 100).toFixed(0)}% {t.calibStabilityAbbr}
                       </div>
                     </div>
                   </div>
@@ -792,12 +805,12 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
 
               {/* Corner Coordinates List */}
               <div className="bg-neutral-950 rounded p-3 border border-neutral-800 font-mono text-[11px] text-neutral-300 text-left">
-                <div className="text-neutral-500 text-[10px] mb-1 font-semibold">SKALIBROWANE NAROŻNIKI RAW:</div>
+                <div className="text-neutral-500 text-[10px] mb-1 font-semibold">{t.calibCalibratedCorners}</div>
                 <div className="grid grid-cols-2 gap-1 text-emerald-400">
-                  <span>Point 1 (TL): ({collectedPoints.TL?.x}, {collectedPoints.TL?.y})</span>
-                  <span>Point 2 (TR): ({collectedPoints.TR?.x}, {collectedPoints.TR?.y})</span>
-                  <span>Point 3 (BR): ({collectedPoints.BR?.x}, {collectedPoints.BR?.y})</span>
-                  <span>Point 4 (BL): ({collectedPoints.BL?.x}, {collectedPoints.BL?.y})</span>
+                  <span>{t.calibPointLabel} 1 (TL): ({collectedPoints.TL?.x}, {collectedPoints.TL?.y})</span>
+                  <span>{t.calibPointLabel} 2 (TR): ({collectedPoints.TR?.x}, {collectedPoints.TR?.y})</span>
+                  <span>{t.calibPointLabel} 3 (BR): ({collectedPoints.BR?.x}, {collectedPoints.BR?.y})</span>
+                  <span>{t.calibPointLabel} 4 (BL): ({collectedPoints.BL?.x}, {collectedPoints.BL?.y})</span>
                 </div>
               </div>
 
@@ -807,14 +820,14 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
                   onClick={handleReset}
                   className="px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold cursor-pointer"
                 >
-                  Powtórz Kalibrację
+                  {t.calibRepeatBtn}
                 </button>
                 <button
                   type="button"
                   onClick={handleApply}
                   className="px-5 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-neutral-950 text-xs font-bold shadow-lg shadow-cyan-500/20 cursor-pointer"
                 >
-                  Zastosuj i Zapisz
+                  {t.calibApplySaveBtn}
                 </button>
               </div>
             </div>
@@ -914,17 +927,17 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1 text-cyan-400">
             <Crosshair className="w-3.5 h-3.5" />
-            {language === 'pl' ? 'Tryb' : 'Mode'}: {
+            {t.calibModeLabel}: {
               isQuickStart
-                ? (language === 'pl' ? 'Przewodnik Szybki Start' : 'Quick Start Guide')
+                ? t.quickStartTitle
                 : mode === 'auto-detect'
-                ? (language === 'pl' ? 'Auto-Wykrywanie Czułości (3s Hover)' : 'Auto-Detect Sensitivity (3s Hover)')
-                : (language === 'pl' ? 'Manualny Strzał (Spust/Klik)' : 'Manual Shoot (Trigger/Click)')
+                ? `${t.calibModeAutoDetect} (3s Hover)`
+                : `${t.calibModeManual} (${language === 'pl' ? 'Spust/Klik' : 'Trigger/Click'})`
             }
           </span>
           <span className="hidden md:inline text-neutral-600">|</span>
           <span className="hidden md:inline text-neutral-400">
-            {language === 'pl' ? 'Bieżący cel' : 'Current Target'}: <strong className="text-white">{currentCorner?.name}</strong>
+            {t.calibCurrentTarget}: <strong className="text-white">{currentCorner?.name}</strong>
           </span>
         </div>
         <div className="flex items-center gap-3 text-neutral-500">
@@ -934,10 +947,10 @@ export const CalibrationModal: React.FC<CalibrationModalProps> = ({
             className="hover:text-cyan-400 transition-colors flex items-center gap-1 cursor-pointer"
           >
             <kbd className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-cyan-300 font-mono text-[10px]">Q</kbd>
-            <span>{isQuickStart ? (language === 'pl' ? 'Zamknij Przewodnik' : 'Close Guide') : (language === 'pl' ? 'Przewodnik' : 'Guide')}</span>
+            <span>{isQuickStart ? t.calibGuideClose : t.calibGuideOpen}</span>
           </button>
-          <span>SPACJA / ENTER = {isQuickStart ? (language === 'pl' ? 'Rozpocznij' : 'Start') : (language === 'pl' ? 'Strzał / Próbkuj' : 'Shoot / Sample')}</span>
-          <span>ESC = {language === 'pl' ? 'Anuluj' : 'Cancel'}</span>
+          <span>SPACJA / ENTER = {isQuickStart ? t.calibStartLabel : t.calibShootSampleLabel}</span>
+          <span>ESC = {t.calibCancelLabel}</span>
         </div>
       </div>
     </div>

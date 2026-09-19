@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Monitor, Download, Copy, Check, Terminal, Play, Cpu, ShieldCheck, X, Sparkles } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface StandaloneWin11ModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
   onDownloadZip,
   isDownloadingZip,
 }) => {
+  const { t } = useLanguage();
   const [copiedCmd, setCopiedCmd] = useState(false);
 
   if (!isOpen) return null;
@@ -38,14 +40,14 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-['Chakra_Petch'] font-bold text-lg text-white">
-                  SAMODZIELNA APLIKACJA DLA WINDOWS 11 (.EXE)
+                  {t.win11ModalTitle}
                 </h2>
                 <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold uppercase tracking-wider">
                   Self-Contained Single-File
                 </span>
               </div>
               <p className="text-xs text-neutral-400">
-                Pojedynczy plik wykonywalny <code className="text-cyan-300">GaimePcBridge.exe</code> działający na każdym PC z Windows 11 bez zewnętrznych zależności
+                {t.win11ModalDesc}
               </p>
             </div>
           </div>
@@ -66,13 +68,13 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
             <div className="space-y-1">
               <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                Paczka gotowa do pobrania
+                {t.win11ReadyNotice}
               </span>
               <h3 className="text-base font-bold text-white">
-                Pobierz kompletną paczkę z generatorem .EXE dla Windows 11
+                {t.win11DownloadZipCard}
               </h3>
               <p className="text-xs text-neutral-300 max-w-xl">
-                Archiwum ZIP zawiera projekt .NET 8, profil publikacji Single-File oraz automatyczny skrypt <strong className="text-cyan-300">Publish_Standalone_Win11.bat</strong>.
+                {t.win11ZipIncludes}
               </p>
             </div>
 
@@ -83,7 +85,7 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
               className="px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-xs shadow-lg shadow-cyan-500/25 flex items-center gap-2 shrink-0 transition-transform active:scale-95 disabled:opacity-50"
             >
               <Download className="w-4 h-4" />
-              <span>{isDownloadingZip ? 'Pakowanie...' : 'Pobierz Paczkę ZIP'}</span>
+              <span>{isDownloadingZip ? t.packagingBtn : t.downloadZipBtn}</span>
             </button>
           </div>
 
@@ -91,7 +93,7 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
           <div className="space-y-3">
             <h4 className="font-['Chakra_Petch'] text-sm font-bold uppercase tracking-wider text-neutral-200 flex items-center gap-2">
               <Play className="w-4 h-4 text-emerald-400" />
-              Jak uruchomić aplikację w Windows 11 w 3 krokach
+              {t.win11HowToRun}
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -100,9 +102,9 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
                 <div className="w-7 h-7 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center font-mono font-bold text-xs text-cyan-400">
                   01
                 </div>
-                <h5 className="font-bold text-xs text-white">Wypakuj archiwum ZIP</h5>
+                <h5 className="font-bold text-xs text-white">{t.win11Step1Title}</h5>
                 <p className="text-[11px] text-neutral-400 leading-relaxed">
-                  Pobierz paczkę ZIP i wypakuj ją w dowolnym folderze na dysku (np. <code>C:\GAMES\GaimePcBridge</code>).
+                  {t.win11Step1Desc}
                 </p>
               </div>
 
@@ -111,9 +113,9 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
                 <div className="w-7 h-7 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center font-mono font-bold text-xs text-cyan-400">
                   02
                 </div>
-                <h5 className="font-bold text-xs text-white">Dwuklik w skrypt .BAT</h5>
+                <h5 className="font-bold text-xs text-white">{t.win11Step2Title}</h5>
                 <p className="text-[11px] text-neutral-400 leading-relaxed">
-                  Kliknij dwukrotnie plik <code>Publish_Standalone_Win11.bat</code>. W kilka sekund wygeneruje gotowy plik <code>GaimePcBridge.exe</code>.
+                  {t.win11Step2Body}
                 </p>
               </div>
 
@@ -122,9 +124,9 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
                 <div className="w-7 h-7 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center font-mono font-bold text-xs text-emerald-400">
                   03
                 </div>
-                <h5 className="font-bold text-xs text-white">Uruchom GaimePcBridge.exe</h5>
+                <h5 className="font-bold text-xs text-white">{t.win11Step3Title}</h5>
                 <p className="text-[11px] text-neutral-400 leading-relaxed">
-                  W folderze <code>Publish_Win11</code> pojawi się plik <code>GaimePcBridge.exe</code>. Działa samodzielnie na każdym Windows 11!
+                  {t.win11Step3Desc}
                 </p>
               </div>
             </div>
@@ -135,7 +137,7 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
                 <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-                Dla programistów / Wiersz poleceń (PowerShell & CMD):
+                {t.win11CliTitle}
               </span>
               <button
                 type="button"
@@ -143,7 +145,7 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
                 className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 px-2.5 py-1 rounded bg-neutral-900 border border-neutral-800"
               >
                 {copiedCmd ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedCmd ? 'Skopiowano!' : 'Kopiuj polecenie'}</span>
+                <span>{copiedCmd ? t.copiedBtn : t.win11CopyCmd}</span>
               </button>
             </div>
 
@@ -155,24 +157,24 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
           {/* Technical Specs of the Standalone Build */}
           <div className="bg-neutral-950/70 border border-neutral-800 rounded-xl p-4 space-y-3">
             <span className="text-xs font-semibold text-neutral-200 block">
-              Specyfikacja Samodzielnej Aplikacji Windows 11 (Self-Contained):
+              {t.win11SpecsTitle}
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
               <div className="flex items-center justify-between p-2 rounded bg-neutral-900/80 border border-neutral-800">
-                <span className="text-neutral-400">Architektura docelowa:</span>
+                <span className="text-neutral-400">{t.win11TargetArch}</span>
                 <span className="font-mono text-cyan-300 font-bold">win-x64 (Windows 11 / 10 64-bit)</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-neutral-900/80 border border-neutral-800">
-                <span className="text-neutral-400">Tryb wdrożenia:</span>
-                <span className="font-mono text-cyan-300 font-bold">Self-Contained (Środowisko wbudowane)</span>
+                <span className="text-neutral-400">{t.win11DeployMode}</span>
+                <span className="font-mono text-cyan-300 font-bold">{t.win11SelfContained}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-neutral-900/80 border border-neutral-800">
-                <span className="text-neutral-400">Format wyjściowy:</span>
-                <span className="font-mono text-emerald-300 font-bold">Pojedynczy plik .EXE (Single-File)</span>
+                <span className="text-neutral-400">{t.win11OutputFormat}</span>
+                <span className="font-mono text-emerald-300 font-bold">{t.win11SingleFile}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-neutral-900/80 border border-neutral-800">
-                <span className="text-neutral-400">Uprawnienia:</span>
-                <span className="font-mono text-amber-350 font-bold">Standardowe (Brak sterowników jądra)</span>
+                <span className="text-neutral-400">{t.win11Permissions}</span>
+                <span className="font-mono text-amber-350 font-bold">{t.win11DriverNone}</span>
               </div>
             </div>
           </div>
@@ -186,7 +188,7 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
             onClick={onClose}
             className="px-4 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-medium transition-colors"
           >
-            Zamknij
+            {t.win11CloseBtn}
           </button>
         </div>
       </div>

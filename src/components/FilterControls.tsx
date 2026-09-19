@@ -230,7 +230,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             type="button"
             onClick={() => setIsAutoLearning(false)}
             className="absolute top-3 right-3 text-neutral-400 hover:text-neutral-200 p-1 rounded-md"
-            title="Zamknij"
+            title={language === 'pl' ? 'Zamknij' : 'Close'}
           >
             <X className="w-4 h-4" />
           </button>
@@ -249,7 +249,9 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
                   <p className="font-semibold text-amber-300">{t.autoLearnHoldingPrompt}</p>
                   <p className="text-[11px] text-neutral-400 mt-0.5">
                     {isGunConnected
-                      ? 'Pomiar fizycznego sygnału sensora optycznego G\'AIM\'E USB.'
+                      ? (language === 'pl'
+                          ? "Pomiar fizycznego sygnału sensora optycznego G'AIM'E USB."
+                          : "Measuring real physical G'AIM'E USB optical sensor signal.")
                       : t.autoLearnSimulatedNotice}
                   </p>
                 </div>
@@ -295,13 +297,13 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-400">{t.autoLearnStdDev}</span>
                   <span className="font-mono text-amber-300 font-semibold">
-                    {learningResult.stdDev} jedn.
+                    {learningResult.stdDev} {language === 'pl' ? 'jedn.' : 'units'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-400">{t.autoLearnMaxJump}</span>
                   <span className="font-mono text-neutral-300 font-semibold">
-                    {learningResult.maxDelta} jedn.
+                    {learningResult.maxDelta} {language === 'pl' ? 'jedn.' : 'units'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between border-t border-neutral-800/80 pt-2">

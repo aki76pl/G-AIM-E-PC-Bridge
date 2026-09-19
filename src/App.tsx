@@ -106,7 +106,11 @@ export default function App() {
       ...prev,
       stabilityVsSpeed: p.recommendedFilterStability,
     }));
-    showNotification(`Załadowano profil gry: ${p.name} (Zalecany filtr: ${Math.round(p.recommendedFilterStability * 100)}%)`);
+    showNotification(
+      language === 'pl'
+        ? `Załadowano profil gry: ${p.name} (Zalecany filtr: ${Math.round(p.recommendedFilterStability * 100)}%)`
+        : `Loaded game profile: ${p.name} (Recommended filter: ${Math.round(p.recommendedFilterStability * 100)}%)`
+    );
   };
 
   // Process incoming coordinates through filter & calibration
@@ -229,16 +233,28 @@ export default function App() {
     try {
       const ok = await webHidService.current.connectRealDevice();
       if (ok) {
-        showNotification("Pomyślnie połączono z pistoletem G'AIM'E (2E2C:0631) przez WebHID!");
+        showNotification(
+          language === 'pl'
+            ? "Pomyślnie połączono z pistoletem G'AIM'E (2E2C:0631) przez WebHID!"
+            : "Successfully connected to G'AIM'E lightgun (2E2C:0631) via WebHID!"
+        );
       }
     } catch (err: any) {
-      showNotification(`Błąd WebHID: ${err.message || 'Nie wybrano urządzenia'}`);
+      showNotification(
+        language === 'pl'
+          ? `Błąd WebHID: ${err.message || 'Nie wybrano urządzenia'}`
+          : `WebHID error: ${err.message || 'No device selected'}`
+      );
     }
   };
 
   const handleDisconnectWebHid = () => {
     webHidService.current.disconnect();
-    showNotification("Rozłączono urządzenie WebHID G'AIM'E.");
+    showNotification(
+      language === 'pl'
+        ? "Rozłączono urządzenie WebHID G'AIM'E."
+        : "Disconnected WebHID G'AIM'E device."
+    );
   };
 
   const handleSimulatedMove = (rawX: number, rawY: number) => {
@@ -262,7 +278,11 @@ export default function App() {
     const activeGun = activePlayer === 'P1' ? gunStateP1 : gunStateP2;
     const wildX = Math.min(9900, activeGun.rawX + 4500);
     const wildY = Math.max(100, activeGun.rawY - 3500);
-    showNotification("Wstrzyknięto skok anomalii optycznej (+4500 jedn.) — filtr pomyślnie zablokował skok celownika!");
+    showNotification(
+      language === 'pl'
+        ? "Wstrzyknięto skok anomalii optycznej (+4500 jedn.) — filtr pomyślnie zablokował skok celownika!"
+        : "Injected optical anomaly spike (+4500 units) — filter successfully blocked crosshair jump!"
+    );
     processIncomingAim(activePlayer, wildX, wildY, false, true);
   };
 
@@ -279,10 +299,16 @@ export default function App() {
         stabilityVsSpeed: data.optimalRanges!.recommendedFilterStability,
       }));
       showNotification(
-        `Zastosowano kalibrację i optymalną czułość (${Math.round(data.optimalRanges.recommendedFilterStability * 100)}% stabilizacji) dla Gracza ${activePlayer}!`
+        language === 'pl'
+          ? `Zastosowano kalibrację i optymalną czułość (${Math.round(data.optimalRanges.recommendedFilterStability * 100)}% stabilizacji) dla Gracza ${activePlayer}!`
+          : `Applied calibration and optimal sensitivity (${Math.round(data.optimalRanges.recommendedFilterStability * 100)}% stability) for Player ${activePlayer}!`
       );
     } else {
-      showNotification(`Zastosowano nową kalibrację perspektywiczną 4 punktów dla Gracza ${activePlayer}!`);
+      showNotification(
+        language === 'pl'
+          ? `Zastosowano nową kalibrację perspektywiczną 4 punktów dla Gracza ${activePlayer}!`
+          : `Applied new 4-point perspective calibration for Player ${activePlayer}!`
+      );
     }
   };
 
@@ -290,10 +316,18 @@ export default function App() {
     try {
       setIsDownloadingZip(true);
       await downloadCSharpProjectZip();
-      showNotification('Pobrano kompletną paczkę ZIP z projektem Visual Studio 2022 .NET 8 WPF!');
+      showNotification(
+        language === 'pl'
+          ? 'Pobrano kompletną paczkę ZIP z projektem Visual Studio 2022 .NET 8 WPF!'
+          : 'Downloaded complete ZIP package with Visual Studio 2022 .NET 8 WPF project!'
+      );
     } catch (e: any) {
       console.error(e);
-      showNotification(`Błąd generowania ZIP: ${e.message}`);
+      showNotification(
+        language === 'pl'
+          ? `Błąd generowania ZIP: ${e.message}`
+          : `ZIP generation error: ${e.message}`
+      );
     } finally {
       setIsDownloadingZip(false);
     }
@@ -421,7 +455,9 @@ export default function App() {
                 stabilityVsSpeed: stability,
               }));
               showNotification(
-                `Zastosowano czułość filtra z profilu (${Math.round(stability * 100)}% stabilizacji)!`
+                language === 'pl'
+                  ? `Zastosowano czułość filtra z profilu (${Math.round(stability * 100)}% stabilizacji)!`
+                  : `Applied filter sensitivity from profile (${Math.round(stability * 100)}% stability)!`
               );
             }}
           />

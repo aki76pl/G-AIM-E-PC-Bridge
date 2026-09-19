@@ -103,11 +103,13 @@ export interface Translations {
   emulatorCardSubtitle: string;
   catAll: string;
   copyConfigBtn: string;
+  copiedBtn: string;
   downloadConfigBtn: string;
   copiedNotice: string;
   copyLaunchCmd: string;
   selectGameProfile: string;
   recommendedSettings: string;
+  recommendedFilterLabel: string;
   filterStabilityVal: string;
   deadzoneVal: string;
   sensitivityVal: string;
@@ -152,6 +154,144 @@ export interface Translations {
   quickStartStep4Title: string;
   quickStartStep4Desc: string;
   quickStartStep4Tip: string;
+
+  // Additional Calibration Modal Keys
+  calibCornerTL_name: string;
+  calibCornerTL_label: string;
+  calibCornerTL_sub: string;
+  calibCornerTR_name: string;
+  calibCornerTR_label: string;
+  calibCornerTR_sub: string;
+  calibCornerBR_name: string;
+  calibCornerBR_label: string;
+  calibCornerBR_sub: string;
+  calibCornerBL_name: string;
+  calibCornerBL_label: string;
+  calibCornerBL_sub: string;
+  calibStepOf: string;
+  calibPointLabel: string;
+  calibStatusCaptured: string;
+  calibStatusActive: string;
+  calibStatusWaiting: string;
+  calibAimAndShoot: string;
+  calibHold3s: string;
+  calibSamplingCount: string;
+  calibHoverCorner: string;
+  calibHoldSteady: string;
+  calibAutoDetectHelp: string;
+  calibCurrentRaw: string;
+  calibPressSpacePrompt: string;
+  calibSuccessTitle: string;
+  calibSuccessDesc: string;
+  calibDetectedRanges: string;
+  calibHorizontalRange: string;
+  calibVerticalRange: string;
+  calibSpan: string;
+  calibRawUnits: string;
+  calibNoiseLevel: string;
+  calibFieldOfView: string;
+  calibOfSensor: string;
+  calibRecFilter: string;
+  calibStabilityAbbr: string;
+  calibCalibratedCorners: string;
+  calibRepeatBtn: string;
+  calibApplySaveBtn: string;
+  calibResetAllTitle: string;
+  calibCurrentTarget: string;
+  calibModeLabel: string;
+  calibGuideClose: string;
+  calibGuideOpen: string;
+  calibStartLabel: string;
+  calibShootSampleLabel: string;
+  calibCancelLabel: string;
+
+  // Additional Emulator & Card Keys
+  applyToPipeline: string;
+  copyLaunchTooltip: string;
+  generatorTitle: string;
+  generatorDesc: string;
+  copyContent: string;
+  pedalActionLabel: string;
+  mappedInputsTitle: string;
+  reloadActionKey: string;
+  usbPedalKey: string;
+  suppressRestingJitter: string;
+  crosshairSpeed: string;
+  activeCustom: string;
+  defaultStandard: string;
+  activeStatusSingle: string;
+  defaultStatusSingle: string;
+  destinationLocation: string;
+
+  // Standalone Win11 Modal
+  win11ModalTitle: string;
+  win11ModalDesc: string;
+  win11DownloadZipCard: string;
+  win11HowToRun: string;
+  win11Step1: string;
+  win11Step1Desc: string;
+  win11Step2: string;
+  win11Step2Desc: string;
+  win11Step3: string;
+  win11Step3Desc: string;
+  win11CliTitle: string;
+  win11DeployMode: string;
+  win11SelfContained: string;
+  win11OutputFormat: string;
+  win11SingleFile: string;
+  win11DriverReq: string;
+  win11DriverNone: string;
+  win11SpecsTitle: string;
+  win11TargetArch: string;
+  win11Permissions: string;
+  win11CloseBtn: string;
+  win11ReadyNotice: string;
+  win11ZipIncludes: string;
+  win11Step1Title: string;
+  win11Step2Title: string;
+  win11Step2Body: string;
+  win11Step3Title: string;
+  win11CopyCmd: string;
+
+  // Source Code Modal
+  sourceModalTitle: string;
+  sourceModalDesc: string;
+  sourceModalSubtitle: string;
+  projectFilesTitle: string;
+  downloadZipBtn: string;
+  packagingBtn: string;
+  copyBtn: string;
+
+  // PCSX2 Card
+  pcsx2CardTitle: string;
+  pcsx2CardSubtitle: string;
+  pcsx2PedalAction: string;
+  pcsx2OffscreenReload: string;
+  pcsx2RecommendedMapping: string;
+  pcsx2SetupStepsTitle: string;
+  pcsx2Step1: string;
+  pcsx2Step2: string;
+  pcsx2Step3: string;
+  pcsx2Step4: string;
+  pcsx2Yes: string;
+  pcsx2No: string;
+  pcsx2ButtonA: string;
+  pcsx2ButtonB: string;
+  pcsx2Crosshair: string;
+  pcsx2ConfigSnippetLabel: string;
+  pcsx2CopyIni: string;
+  pcsx2QuickGuideTitle: string;
+
+  // Raw Packet Log
+  rawLogTitle: string;
+  rawLogSubtitle: string;
+  rawLogResume: string;
+  rawLogPause: string;
+  rawLogClear: string;
+  rawLogWaiting: string;
+  rawLogStructure: string;
+  rawLogTrigger: string;
+  rawLogIdle: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -258,11 +398,13 @@ export const translations: Record<Language, Translations> = {
     emulatorCardSubtitle: "Gotowe konfiguracje dla RetroArch SNES, PCSX2, DemulShooter, MAME, Model 2 i TeknoParrot",
     catAll: "Wszystkie",
     copyConfigBtn: "Kopiuj plik",
+    copiedBtn: "Skopiowano!",
     downloadConfigBtn: "Pobierz plik",
     copiedNotice: "Skopiowano do schowka!",
     copyLaunchCmd: "Kopiuj polecenie startowe",
     selectGameProfile: "Wybierz profil gry:",
     recommendedSettings: "Rekomendowane nastawy filtra:",
+    recommendedFilterLabel: "Zalecany filtr:",
     filterStabilityVal: "Stabilność filtra:",
     deadzoneVal: "Martwa strefa:",
     sensitivityVal: "Mnożnik czułości:",
@@ -307,6 +449,144 @@ export const translations: Record<Language, Translations> = {
     quickStartStep4Title: "KROK 4: Lewy Dolny Róg (Point 4 - BL)",
     quickStartStep4Desc: "Wyceluj w ostatni celownik w lewym dolnym rogu. Ten punkt domyka pełny czworokąt perspektywiczny (Homography 3×3).",
     quickStartStep4Tip: "💡 Wskazówka: Po zatwierdzeniu tego punktu algorytm automatycznie zlikwiduje efekt trapezu, przesunięcia paralaksy i błędy montażu paska IR!",
+
+    // Additional Calibration Modal Keys
+    calibCornerTL_name: "Punkt 1 (Góra-Lewo)",
+    calibCornerTL_label: "Punkt 1: Lewy Górny Róg (Top-Left)",
+    calibCornerTL_sub: "Wyceluj w czerwony celownik w lewym górnym rogu",
+    calibCornerTR_name: "Punkt 2 (Góra-Prawo)",
+    calibCornerTR_label: "Punkt 2: Prawy Górny Róg (Top-Right)",
+    calibCornerTR_sub: "Wyceluj w prawy górny narożnik",
+    calibCornerBR_name: "Punkt 3 (Dół-Prawo)",
+    calibCornerBR_label: "Punkt 3: Prawy Dolny Róg (Bottom-Right)",
+    calibCornerBR_sub: "Wyceluj w prawy dolny narożnik",
+    calibCornerBL_name: "Punkt 4 (Dół-Lewo)",
+    calibCornerBL_label: "Punkt 4: Lewy Dolny Róg (Bottom-Left)",
+    calibCornerBL_sub: "Wyceluj w lewy dolny narożnik",
+    calibStepOf: "KROK {step} Z 4",
+    calibPointLabel: "Punkt",
+    calibStatusCaptured: "Zapisany",
+    calibStatusActive: "Aktywny",
+    calibStatusWaiting: "Oczekuje w kolejce",
+    calibAimAndShoot: "Wyceluj i naciśnij spust",
+    calibHold3s: "Przetrzymaj 3s",
+    calibSamplingCount: "Zbieranie ({count} prób.)",
+    calibHoverCorner: "Najedź na narożnik",
+    calibHoldSteady: "Trzymaj celownik stabilnie... Próbki: {count}",
+    calibAutoDetectHelp: "Przytrzymaj celownik w kółku przez 3 sekundy. Zostanie zebrana próbka szumu i wyznaczona czułość.",
+    calibCurrentRaw: "Bieżące RAW:",
+    calibPressSpacePrompt: "Wciśnij SPACJĘ lub strzel pistoletem G'AIM'E",
+    calibSuccessTitle: "Kalibracja Zakończona Sukcesem!",
+    calibSuccessDesc: "Wszystkie 4 punkty narożne zostały pomyślnie przechwycone i skompensowane.",
+    calibDetectedRanges: "WYKRYTE ZAKRESY I PROFIL CZUŁOŚCI:",
+    calibHorizontalRange: "Zakres Poziomy (Oś X)",
+    calibVerticalRange: "Zakres Pionowy (Oś Y)",
+    calibSpan: "Rozpiętość:",
+    calibRawUnits: "jedn. RAW",
+    calibNoiseLevel: "POZIOM SZUMU",
+    calibFieldOfView: "POLE WIDZENIA",
+    calibOfSensor: "matrycy",
+    calibRecFilter: "REK. FILTR",
+    calibStabilityAbbr: "stab.",
+    calibCalibratedCorners: "SKALIBROWANE NAROŻNIKI RAW:",
+    calibRepeatBtn: "Powtórz Kalibrację",
+    calibApplySaveBtn: "Zastosuj i Zapisz",
+    calibResetAllTitle: "Resetuj wszystkie punkty",
+    calibCurrentTarget: "Bieżący cel",
+    calibModeLabel: "Tryb",
+    calibGuideClose: "Zamknij Przewodnik",
+    calibGuideOpen: "Przewodnik",
+    calibStartLabel: "Rozpocznij",
+    calibShootSampleLabel: "Strzał / Próbkuj",
+    calibCancelLabel: "Anuluj",
+
+    // Additional Emulator & Card Keys
+    applyToPipeline: "Zastosuj do potoku",
+    copyLaunchTooltip: "Kopiuj komendę uruchomieniową DemulShooter",
+    generatorTitle: "GENERATOR PLIKÓW KONFIGURACYJNYCH (.INI / .CFG / .XML)",
+    generatorDesc: "Wartości kalibracji obu graczy (P1 i P2) są automatycznie wstrzykiwane do wygenerowanego pliku",
+    copyContent: "Kopiuj treść",
+    pedalActionLabel: "Akcja pedału:",
+    mappedInputsTitle: "Zmapowane wejścia pistoletu i pedału:",
+    reloadActionKey: "Przeład./Akcja:",
+    usbPedalKey: "Pedał USB:",
+    suppressRestingJitter: "Tłumi mikro-drgania matrycy w spoczynku",
+    crosshairSpeed: "Szybkość ruchu celownika po ekranie",
+    activeCustom: "Aktywna (Własna)",
+    defaultStandard: "Domyślna (Standard)",
+    activeStatusSingle: "Aktywna",
+    defaultStatusSingle: "Domyślna",
+    destinationLocation: "Docelowa lokalizacja:",
+
+    // Standalone Win11 Modal
+    win11ModalTitle: "SAMODZIELNA APLIKACJA DLA WINDOWS 11 (.EXE)",
+    win11ModalDesc: "Pojedynczy plik wykonywalny GaimePcBridge.exe działający na każdym PC z Windows 11 bez zewnętrznych zależności",
+    win11DownloadZipCard: "Pobierz kompletną paczkę z generatorem .EXE dla Windows 11",
+    win11HowToRun: "Jak uruchomić aplikację w Windows 11 w 3 krokach",
+    win11Step1: "KROK 1: Rozpakuj archiwum",
+    win11Step1Desc: "Pobierz paczkę ZIP i wypakuj ją w dowolnym folderze na dysku (np. C:\\GAMES\\GaimePcBridge).",
+    win11Step2: "KROK 2: Uruchom skrypt budujący",
+    win11Step2Desc: "Kliknij dwukrotnie plik Build_Standalone_Win11.bat lub uruchom Build_Standalone_Win11.ps1 w PowerShell.",
+    win11Step3: "KROK 3: Gotowy plik .EXE",
+    win11Step3Desc: "W folderze Publish_Win11 pojawi się plik GaimePcBridge.exe. Działa samodzielnie na każdym Windows 11!",
+    win11CliTitle: "Dla programistów / Wiersz poleceń (PowerShell & CMD):",
+    win11DeployMode: "Tryb wdrożenia:",
+    win11SelfContained: "Self-Contained (Środowisko wbudowane)",
+    win11OutputFormat: "Format wyjściowy:",
+    win11SingleFile: "Pojedynczy plik wykonywalny (.exe)",
+    win11DriverReq: "Wymagania sterowników:",
+    win11DriverNone: "Standardowe (Brak sterowników jądra)",
+    win11SpecsTitle: "Specyfikacja Samodzielnej Aplikacji Windows 11 (Self-Contained):",
+    win11TargetArch: "Architektura docelowa:",
+    win11Permissions: "Uprawnienia:",
+    win11CloseBtn: "Zamknij",
+    win11ReadyNotice: "Paczka gotowa do pobrania",
+    win11ZipIncludes: "Archiwum ZIP zawiera projekt .NET 8, profil publikacji Single-File oraz automatyczny skrypt Publish_Standalone_Win11.bat.",
+    win11Step1Title: "Wypakuj archiwum ZIP",
+    win11Step2Title: "Dwuklik w skrypt .BAT",
+    win11Step2Body: "Kliknij dwukrotnie plik Publish_Standalone_Win11.bat. W kilka sekund wygeneruje gotowy plik GaimePcBridge.exe.",
+    win11Step3Title: "Uruchom GaimePcBridge.exe",
+    win11CopyCmd: "Kopiuj polecenie",
+
+    // Source Code Modal
+    sourceModalTitle: "KOD ŹRÓDŁOWY C# / .NET 8 WPF (VISUAL STUDIO 2022)",
+    sourceModalDesc: "Kompletny kod źródłowy silnika Windows dla pistoletu G'AIM'E: obsługa WebHID/RawInput, filtr jittera, homografia 3x3 oraz wirtualna mysz/joystick",
+    sourceModalSubtitle: "Kompletny, kompilowalny projekt Windows gotowy do uruchomienia (F5) w Visual Studio",
+    projectFilesTitle: "Pliki Projektu",
+    downloadZipBtn: "Pobierz Paczkę ZIP",
+    packagingBtn: "Pakowanie...",
+    copyBtn: "Kopiuj",
+
+    // PCSX2 Card
+    pcsx2CardTitle: "INTEGRACJA Z PCSX2 (GUNCON 2)",
+    pcsx2CardSubtitle: "Profile mapowania przycisków i konfiguracja emulatora PlayStation 2",
+    pcsx2PedalAction: "Akcja pedału:",
+    pcsx2OffscreenReload: "Przeładowanie poza ekranem:",
+    pcsx2RecommendedMapping: "Zalecane Mapowanie Wejść",
+    pcsx2SetupStepsTitle: "Szybka instrukcja w PCSX2:",
+    pcsx2Step1: "W PCSX2 wejdź w Settings → Controllers → Controller Port 1.",
+    pcsx2Step2: "Wybierz typ urządzenia: GunCon 2.",
+    pcsx2Step3: "Upewnij się, że Pointer przypisany jest do wskaźnika myszy Windows.",
+    pcsx2Step4: "W grze po starcie wykonaj pojedynczy strzał kalibracyjny w środek ekranu.",
+    pcsx2Yes: "TAK",
+    pcsx2No: "NIE",
+    pcsx2ButtonA: "Przycisk A:",
+    pcsx2ButtonB: "Przycisk B:",
+    pcsx2Crosshair: "Celownik:",
+    pcsx2ConfigSnippetLabel: "Wycinek konfiguracji PCSX2 (Controllers.ini):",
+    pcsx2CopyIni: "Kopiuj INI",
+    pcsx2QuickGuideTitle: "Szybka instrukcja w PCSX2:",
+
+    // Raw Packet Log
+    rawLogTitle: "DIAGNOSTYKA RAW HID (PAKIETY 6-BAJTOWE)",
+    rawLogSubtitle: "Podgląd strumienia bajtów digitizera (mattkanwisher/gaime_mods findings)",
+    rawLogResume: "Wznów",
+    rawLogPause: "Wstrzymaj",
+    rawLogClear: "Wyczyść logi",
+    rawLogWaiting: "Oczekiwanie na raporty HID z urządzenia...",
+    rawLogStructure: "Struktura:",
+    rawLogTrigger: "TRIGGER",
+    rawLogIdle: "IDLE",
   },
   en: {
     // Navbar
@@ -411,11 +691,13 @@ export const translations: Record<Language, Translations> = {
     emulatorCardSubtitle: "Ready-to-use configurations for RetroArch SNES, PCSX2, DemulShooter, MAME, Model 2, and TeknoParrot",
     catAll: "All",
     copyConfigBtn: "Copy File",
+    copiedBtn: "Copied!",
     downloadConfigBtn: "Download File",
     copiedNotice: "Copied to clipboard!",
     copyLaunchCmd: "Copy Launch Command",
     selectGameProfile: "Select Game Profile:",
     recommendedSettings: "Recommended Filter Settings:",
+    recommendedFilterLabel: "Recommended Filter:",
     filterStabilityVal: "Filter Stability:",
     deadzoneVal: "Resting Deadzone:",
     sensitivityVal: "Sensitivity Multiplier:",
@@ -460,5 +742,143 @@ export const translations: Record<Language, Translations> = {
     quickStartStep4Title: "STEP 4: Bottom-Left Corner (Point 4 - BL)",
     quickStartStep4Desc: "Aim at the final crosshair in the bottom-left corner. This point closes the perspective quadrangle (3×3 Homography Matrix).",
     quickStartStep4Tip: "💡 Pro-Tip: Confirming this point instantly eliminates keystone distortion, parallax offsets, and emitter mounting skew!",
+
+    // Additional Calibration Modal Keys
+    calibCornerTL_name: "Point 1 (Top-Left)",
+    calibCornerTL_label: "Point 1: Top-Left Corner (TL)",
+    calibCornerTL_sub: "Aim at the red crosshair in the top-left corner",
+    calibCornerTR_name: "Point 2 (Top-Right)",
+    calibCornerTR_label: "Point 2: Top-Right Corner (TR)",
+    calibCornerTR_sub: "Aim at the top-right corner",
+    calibCornerBR_name: "Point 3 (Bottom-Right)",
+    calibCornerBR_label: "Point 3: Bottom-Right Corner (BR)",
+    calibCornerBR_sub: "Aim at the bottom-right corner",
+    calibCornerBL_name: "Point 4 (Bottom-Left)",
+    calibCornerBL_label: "Point 4: Bottom-Left Corner (BL)",
+    calibCornerBL_sub: "Aim at the bottom-left corner",
+    calibStepOf: "STEP {step} OF 4",
+    calibPointLabel: "Point",
+    calibStatusCaptured: "Captured",
+    calibStatusActive: "Active",
+    calibStatusWaiting: "Waiting in queue",
+    calibAimAndShoot: "Aim and pull the trigger",
+    calibHold3s: "Hold for 3s",
+    calibSamplingCount: "Sampling ({count} samples)",
+    calibHoverCorner: "Hover over corner",
+    calibHoldSteady: "Hold crosshair steady... Samples: {count}",
+    calibAutoDetectHelp: "Hold crosshair inside the circle for 3 seconds. Noise will be sampled and sensitivity calculated.",
+    calibCurrentRaw: "Current RAW:",
+    calibPressSpacePrompt: "Press SPACEBAR or pull trigger on G'AIM'E lightgun",
+    calibSuccessTitle: "Calibration Completed Successfully!",
+    calibSuccessDesc: "All 4 corner points have been captured and perspective matrix calibrated.",
+    calibDetectedRanges: "DETECTED RANGES & SENSITIVITY PROFILE:",
+    calibHorizontalRange: "Horizontal Range (X-Axis)",
+    calibVerticalRange: "Vertical Range (Y-Axis)",
+    calibSpan: "Span:",
+    calibRawUnits: "RAW units",
+    calibNoiseLevel: "NOISE FLOOR",
+    calibFieldOfView: "FIELD OF VIEW",
+    calibOfSensor: "of sensor",
+    calibRecFilter: "REC. FILTER",
+    calibStabilityAbbr: "stab.",
+    calibCalibratedCorners: "CALIBRATED RAW CORNERS:",
+    calibRepeatBtn: "Repeat Calibration",
+    calibApplySaveBtn: "Apply & Save",
+    calibResetAllTitle: "Reset all points",
+    calibCurrentTarget: "Current Target",
+    calibModeLabel: "Mode",
+    calibGuideClose: "Close Guide",
+    calibGuideOpen: "Guide",
+    calibStartLabel: "Start",
+    calibShootSampleLabel: "Shoot / Sample",
+    calibCancelLabel: "Cancel",
+
+    // Additional Emulator & Card Keys
+    applyToPipeline: "Apply to Pipeline",
+    copyLaunchTooltip: "Copy DemulShooter launch command",
+    generatorTitle: "CONFIGURATION FILE GENERATOR (.INI / .CFG / .XML)",
+    generatorDesc: "Calibration values for both players (P1 and P2) are automatically injected into the generated file",
+    copyContent: "Copy Content",
+    pedalActionLabel: "Pedal Action:",
+    mappedInputsTitle: "Mapped Lightgun & Pedal Inputs:",
+    reloadActionKey: "Reload/Action:",
+    usbPedalKey: "USB Pedal:",
+    suppressRestingJitter: "Suppresses sensor micro-jitter at rest",
+    crosshairSpeed: "Crosshair travel speed on screen",
+    activeCustom: "Active (Custom)",
+    defaultStandard: "Default (Standard)",
+    activeStatusSingle: "Active",
+    defaultStatusSingle: "Default",
+    destinationLocation: "Target location:",
+
+    // Standalone Win11 Modal
+    win11ModalTitle: "WINDOWS 11 STANDALONE APPLICATION (.EXE)",
+    win11ModalDesc: "Single executable GaimePcBridge.exe running on any Windows 11 PC without external dependencies",
+    win11DownloadZipCard: "Download complete package with .EXE builder for Windows 11",
+    win11HowToRun: "How to run the application on Windows 11 in 3 steps",
+    win11Step1: "STEP 1: Extract the archive",
+    win11Step1Desc: "Download the ZIP package and extract it to any folder on your drive (e.g., C:\\GAMES\\GaimePcBridge).",
+    win11Step2: "STEP 2: Run the build script",
+    win11Step2Desc: "Double-click Build_Standalone_Win11.bat or run Build_Standalone_Win11.ps1 in PowerShell.",
+    win11Step3: "STEP 3: Ready .EXE executable",
+    win11Step3Desc: "Inside the Publish_Win11 folder you will find GaimePcBridge.exe. Runs standalone on any Windows 11 PC!",
+    win11CliTitle: "For developers / Command Line (PowerShell & CMD):",
+    win11DeployMode: "Deployment mode:",
+    win11SelfContained: "Self-Contained (Embedded Runtime)",
+    win11OutputFormat: "Output format:",
+    win11SingleFile: "Single executable file (.exe)",
+    win11DriverReq: "Driver requirements:",
+    win11DriverNone: "Standard (No kernel drivers required)",
+    win11SpecsTitle: "Windows 11 Standalone Application Specification (Self-Contained):",
+    win11TargetArch: "Target architecture:",
+    win11Permissions: "Permissions:",
+    win11CloseBtn: "Close",
+    win11ReadyNotice: "Package ready to download",
+    win11ZipIncludes: "The ZIP archive contains the .NET 8 project, Single-File publish profile, and automated script Publish_Standalone_Win11.bat.",
+    win11Step1Title: "Extract ZIP archive",
+    win11Step2Title: "Double-click .BAT script",
+    win11Step2Body: "Double-click the Publish_Standalone_Win11.bat file. Within seconds it will generate the ready GaimePcBridge.exe.",
+    win11Step3Title: "Run GaimePcBridge.exe",
+    win11CopyCmd: "Copy command",
+
+    // Source Code Modal
+    sourceModalTitle: "C# / .NET 8 WPF SOURCE CODE (VISUAL STUDIO 2022)",
+    sourceModalDesc: "Complete Windows engine source code for G'AIM'E lightgun: WebHID/RawInput handling, jitter filter, 3x3 homography, and virtual mouse/joystick",
+    sourceModalSubtitle: "Complete, buildable Windows project ready to run (F5) in Visual Studio",
+    projectFilesTitle: "Project Files",
+    downloadZipBtn: "Download ZIP Package",
+    packagingBtn: "Packaging...",
+    copyBtn: "Copy",
+
+    // PCSX2 Card
+    pcsx2CardTitle: "PCSX2 & GUNCON 2 INTEGRATION",
+    pcsx2CardSubtitle: "Button mapping profiles and PlayStation 2 emulator configuration",
+    pcsx2PedalAction: "Pedal action:",
+    pcsx2OffscreenReload: "Off-screen reload:",
+    pcsx2RecommendedMapping: "Recommended Input Mapping",
+    pcsx2SetupStepsTitle: "PCSX2 Quick Guide:",
+    pcsx2Step1: "In PCSX2, open Settings → Controllers → Controller Port 1.",
+    pcsx2Step2: "Select device type: GunCon 2.",
+    pcsx2Step3: "Ensure Pointer is assigned to the Windows mouse cursor.",
+    pcsx2Step4: "In-game after launch, perform a single calibration shot at the center of the screen.",
+    pcsx2Yes: "YES",
+    pcsx2No: "NO",
+    pcsx2ButtonA: "Button A:",
+    pcsx2ButtonB: "Button B:",
+    pcsx2Crosshair: "Crosshair:",
+    pcsx2ConfigSnippetLabel: "PCSX2 Configuration Snippet (Controllers.ini):",
+    pcsx2CopyIni: "Copy INI",
+    pcsx2QuickGuideTitle: "PCSX2 Quick Guide:",
+
+    // Raw Packet Log
+    rawLogTitle: "RAW HID DIAGNOSTICS (6-BYTE PACKETS)",
+    rawLogSubtitle: "Digitizer byte stream monitor (mattkanwisher/gaime_mods findings)",
+    rawLogResume: "Resume",
+    rawLogPause: "Pause",
+    rawLogClear: "Clear logs",
+    rawLogWaiting: "Waiting for HID reports from device...",
+    rawLogStructure: "Structure:",
+    rawLogTrigger: "TRIGGER",
+    rawLogIdle: "IDLE",
   },
 };
