@@ -16,6 +16,7 @@ import { LightgunFilterPipeline } from './services/filter';
 import { GAME_PROFILES, MONITOR_PRESETS } from './services/profiles';
 import { WebHidLightgunService } from './services/webhid';
 import { downloadCSharpProjectZip } from './services/zipExporter';
+import { useLanguage } from './context/LanguageContext';
 
 interface PacketLogItem {
   id: number;
@@ -66,6 +67,7 @@ const INITIAL_GUN_STATE = (id: 'P1' | 'P2'): GunState => ({
 });
 
 export default function App() {
+  const { language, setLanguage, t } = useLanguage();
   const [activePlayer, setActivePlayer] = useState<'P1' | 'P2'>('P1');
   const [gunStateP1, setGunStateP1] = useState<GunState>(INITIAL_GUN_STATE('P1'));
   const [gunStateP2, setGunStateP2] = useState<GunState>(INITIAL_GUN_STATE('P2'));
@@ -328,7 +330,15 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-2 text-neutral-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>
-              <strong className="text-white">Samodzielna aplikacja Windows 11:</strong> Pojedynczy plik <code className="text-cyan-300 font-mono">GaimePcBridge.exe</code> (Self-Contained Single-File) bez instalowania .NET Runtime.
+              {language === 'pl' ? (
+                <>
+                  <strong className="text-white">Samodzielna aplikacja Windows 11:</strong> Pojedynczy plik <code className="text-cyan-300 font-mono">GaimePcBridge.exe</code> (Self-Contained Single-File) bez instalowania .NET Runtime.
+                </>
+              ) : (
+                <>
+                  <strong className="text-white">Standalone Windows 11 App:</strong> Single file <code className="text-cyan-300 font-mono">GaimePcBridge.exe</code> (Self-Contained) with zero runtime dependencies.
+                </>
+              )}
             </span>
           </div>
 
@@ -336,18 +346,18 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsWin11ModalOpen(true)}
-              className="px-2.5 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[11px] font-semibold transition-colors flex items-center gap-1.5"
+              className="px-2.5 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[11px] font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Instrukcja kompilacji Win11</span>
+              <span>{language === 'pl' ? 'Instrukcja kompilacji Win11' : 'Win11 Build Guide'}</span>
             </button>
             <button
               type="button"
               onClick={handleDownloadZip}
               disabled={isDownloadingZip}
-              className="px-2.5 py-1 rounded bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-[11px] transition-all"
+              className="px-2.5 py-1 rounded bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-[11px] transition-all cursor-pointer"
             >
-              {isDownloadingZip ? 'Pobieranie...' : 'Pobierz Paczkę (.ZIP)'}
+              {isDownloadingZip ? (language === 'pl' ? 'Pobieranie...' : 'Packaging...') : (language === 'pl' ? 'Pobierz Paczkę (.ZIP)' : 'Download Package (.ZIP)')}
             </button>
           </div>
         </div>

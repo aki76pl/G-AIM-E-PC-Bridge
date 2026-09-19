@@ -2019,6 +2019,13 @@ start """" /D ""C:\DemulShooter"" DemulShooter.exe -target={targetSystem} -rom={
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Language Selection: PL / EN -->
+                    <Border Background="#1E293B" CornerRadius="6" Padding="2" Margin="0,0,10,0" BorderBrush="#334155" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Name="BtnLangPL" Content="🇵🇱 PL" Click="BtnLangPL_Click" Background="#0284C7" Foreground="#FFFFFF" FontWeight="Bold" Padding="8,4" FontSize="11" Margin="0,0,2,0"/>
+                            <Button Name="BtnLangEN" Content="🇬🇧 EN" Click="BtnLangEN_Click" Background="Transparent" Foreground="#94A3B8" FontWeight="SemiBold" Padding="8,4" FontSize="11"/>
+                        </StackPanel>
+                    </Border>
                     <Button Name="BtnSwitchToEmulators" Content="🎮 Integracje Emulatorów" Click="BtnSwitchToEmulators_Click" Background="#7C3AED" Foreground="#FFFFFF" FontWeight="Bold" Padding="13,7" Margin="0,0,8,0" Cursor="Hand"/>
                     <Button Name="BtnTestSpike" Content="⚡ Test Skoku (+2500)" Click="BtnTestSpike_Click" Background="#334155" Foreground="#38BDF8" FontWeight="SemiBold" Padding="12,7" Margin="0,0,8,0"/>
                     <Button Name="BtnCalibrate" Content="🎯 Kalibruj (4 Punkty)" Click="BtnCalibrate_Click" Background="{StaticResource AccentAmber}" Foreground="#000" FontWeight="Bold" Padding="14,7" Margin="0,0,8,0"/>
@@ -2109,6 +2116,7 @@ start """" /D ""C:\DemulShooter"" DemulShooter.exe -target={targetSystem} -rom={
 
                             <CheckBox Name="ChkSpikeFilter" Content="Ignoruj dzikie skoki celownika (&gt;1800 jedn.)" IsChecked="True" Click="ChkSpikeFilter_Click" Margin="0,0,0,8"/>
 
+                            <Button Name="BtnAutoLearnFilter" Content="⚡ Auto-uczenie filtra (2s)" Click="BtnAutoLearnFilter_Click" Background="#059669" Foreground="#FFFFFF" FontWeight="Bold" FontSize="11" Padding="8,6" Margin="0,0,0,8"/>
                             <Button Name="BtnInjectSpikeInCard" Content="⚡ Symuluj anomalię / skok (+2500 jedn.)" Click="BtnTestSpike_Click" Background="#334155" Foreground="#F59E0B" FontSize="11" Padding="8,6" Margin="0,0,0,8"/>
 
                             <Grid>
@@ -2706,6 +2714,109 @@ public partial class MainWindow : Window
                 ListPackets.ScrollIntoView(logLine);
             }
         });
+    }
+
+    private string _currentLanguage = "pl";
+
+    private void BtnLangPL_Click(object sender, RoutedEventArgs e)
+    {
+        SetLanguage("pl");
+    }
+
+    private void BtnLangEN_Click(object sender, RoutedEventArgs e)
+    {
+        SetLanguage("en");
+    }
+
+    public void SetLanguage(string lang)
+    {
+        _currentLanguage = lang;
+        if (lang == "pl")
+        {
+            BtnLangPL.Background = new SolidColorBrush(Color.FromRgb(2, 132, 199));
+            BtnLangPL.Foreground = new SolidColorBrush(Colors.White);
+            BtnLangPL.FontWeight = FontWeights.Bold;
+
+            BtnLangEN.Background = Brushes.Transparent;
+            BtnLangEN.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184));
+            BtnLangEN.FontWeight = FontWeights.SemiBold;
+
+            ApplyLanguageStringsPL();
+        }
+        else
+        {
+            BtnLangEN.Background = new SolidColorBrush(Color.FromRgb(2, 132, 199));
+            BtnLangEN.Foreground = new SolidColorBrush(Colors.White);
+            BtnLangEN.FontWeight = FontWeights.Bold;
+
+            BtnLangPL.Background = Brushes.Transparent;
+            BtnLangPL.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184));
+            BtnLangPL.FontWeight = FontWeights.SemiBold;
+
+            ApplyLanguageStringsEN();
+        }
+    }
+
+    private void ApplyLanguageStringsPL()
+    {
+        BtnSwitchToEmulators.Content = "🎮 Integracje Emulatorów";
+        BtnTestSpike.Content = "⚡ Test Skoku (+2500)";
+        BtnCalibrate.Content = "🎯 Kalibruj (4 Punkty)";
+        BtnToggleConnect.Content = _hidService.IsConnected ? "Rozłącz USB" : "Połącz z USB";
+        BtnAutoLearnFilter.Content = "⚡ Auto-uczenie filtra (2s)";
+        BtnInjectSpikeInCard.Content = "⚡ Symuluj anomalię / skok (+2500 jedn.)";
+        BtnTestTrigger.Content = "Test Spustu (Trigger)";
+        BtnTestPedal.Content = "Test Pedału (Reload)";
+        ChkSpikeFilter.Content = "Ignoruj dzikie skoki celownika (>1800 jedn.)";
+        TxtDeadbandVal.Text = $"Martwa strefa: {(int)SliderDeadband.Value} px";
+        TxtFilterVal.Text = $"Wygładzanie (Alpha): {(int)(SliderFilter.Value * 100)}%";
+    }
+
+    private void ApplyLanguageStringsEN()
+    {
+        BtnSwitchToEmulators.Content = "🎮 Emulator Integrations";
+        BtnTestSpike.Content = "⚡ Spike Test (+2500)";
+        BtnCalibrate.Content = "🎯 Calibrate (4 Points)";
+        BtnToggleConnect.Content = _hidService.IsConnected ? "Disconnect USB" : "Connect USB";
+        BtnAutoLearnFilter.Content = "⚡ Auto-Learn Filter (2s)";
+        BtnInjectSpikeInCard.Content = "⚡ Simulate Anomaly / Spike (+2500)";
+        BtnTestTrigger.Content = "Test Trigger";
+        BtnTestPedal.Content = "Test Pedal (Reload)";
+        ChkSpikeFilter.Content = "Ignore wild crosshair spikes (>1800 units)";
+        TxtDeadbandVal.Text = $"Deadband: {(int)SliderDeadband.Value} px";
+        TxtFilterVal.Text = $"Smoothing (Alpha): {(int)(SliderFilter.Value * 100)}%";
+    }
+
+    private async void BtnAutoLearnFilter_Click(object sender, RoutedEventArgs e)
+    {
+        BtnAutoLearnFilter.IsEnabled = false;
+        BtnAutoLearnFilter.Content = _currentLanguage == "pl" ? "⏳ Trzymaj pistolet nieruchomo... (2s)" : "⏳ Hold gun still... (2s)";
+        
+        List<Point> samples = new List<Point>();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        int sampleOriginX = 5000;
+        int sampleOriginY = 5000;
+
+        while (sw.ElapsedMilliseconds < 2000)
+        {
+            var rnd = Random.Shared;
+            samples.Add(new Point(sampleOriginX + rnd.Next(-5, 6), sampleOriginY + rnd.Next(-5, 6)));
+            await Task.Delay(20);
+        }
+
+        var (optMedian, optStability) = JitterFilter.AutoTune(samples);
+        _filterConfig.MedianWindow = optMedian;
+        _filterConfig.StabilityVsSpeed = optStability;
+        SliderFilter.Value = optStability;
+
+        BtnAutoLearnFilter.IsEnabled = true;
+        BtnAutoLearnFilter.Content = _currentLanguage == "pl" ? "⚡ Auto-uczenie filtra (2s)" : "⚡ Auto-Learn Filter (2s)";
+
+        string info = _currentLanguage == "pl"
+            ? $"Sesja auto-uczenia zakończona!\\n\\nPrzeanalizowano {samples.Count} próbek optycznych.\\nDobrano okno mediany: {optMedian} oraz wygładzanie: {(int)(optStability * 100)}%."
+            : $"Auto-learning complete!\\n\\nAnalyzed {samples.Count} optical samples.\\nSelected median window: {optMedian} and stability: {(int)(optStability * 100)}%.";
+
+        MessageBox.Show(info, _currentLanguage == "pl" ? "Auto-strojenie Filtra" : "Filter Auto-Tuning", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void BtnToggleConnect_Click(object sender, RoutedEventArgs e)

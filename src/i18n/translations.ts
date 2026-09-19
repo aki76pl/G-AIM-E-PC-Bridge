@@ -125,6 +125,33 @@ export interface Translations {
   notifCalibrated: string;
   notifSpikeInjected: string;
   notifAutoLearned: string;
+
+  // Calibration & Quick Start
+  calibModalTitle: string;
+  calibHomographyBadge: string;
+  calibModalSubtitle: string;
+  calibModeQuickStart: string;
+  calibModeManual: string;
+  calibModeAutoDetect: string;
+  calibResetBtn: string;
+  quickStartTitle: string;
+  quickStartSubtitle: string;
+  quickStartMonitorHeader: string;
+  quickStartStartCalibrationBtn: string;
+  quickStartBackToGuideBtn: string;
+  quickStartInteractiveHint: string;
+  quickStartStep1Title: string;
+  quickStartStep1Desc: string;
+  quickStartStep1Tip: string;
+  quickStartStep2Title: string;
+  quickStartStep2Desc: string;
+  quickStartStep2Tip: string;
+  quickStartStep3Title: string;
+  quickStartStep3Desc: string;
+  quickStartStep3Tip: string;
+  quickStartStep4Title: string;
+  quickStartStep4Desc: string;
+  quickStartStep4Tip: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -253,6 +280,33 @@ export const translations: Record<Language, Translations> = {
     notifCalibrated: "Kalibracja zakończona sukcesem!",
     notifSpikeInjected: "Wstrzyknięto anomalny skok testowy (+4500 jednostek)",
     notifAutoLearned: "Automatycznie dostrojono filtr: okno mediany {window}, stabilność {stability}%",
+
+    // Calibration & Quick Start
+    calibModalTitle: "KALIBRACJA 4 PUNKTÓW G'AIM'E",
+    calibHomographyBadge: "Homography 3×3",
+    calibModalSubtitle: "Koryguje zniekształcenia perspektywiczne i wyznacza optymalne zakresy wejściowe matrycy",
+    calibModeQuickStart: "🚀 Szybki Start (Przewodnik)",
+    calibModeManual: "🎯 Tryb Strzału",
+    calibModeAutoDetect: "✨ Auto-Wykrywanie Czułości",
+    calibResetBtn: "Resetuj",
+    quickStartTitle: "SZYBKI START: PRZEWODNIK KALIBRACJI 4 NAROŻNIKÓW",
+    quickStartSubtitle: "Wizualny przewodnik krok po kroku po procedurze celowania w cztery narożniki monitora",
+    quickStartMonitorHeader: "SCHEMAT POZYCJONOWANIA MATRYCY I SEKWENCJI CELOWANIA",
+    quickStartStartCalibrationBtn: "Rozpocznij Kalibrację Teraz",
+    quickStartBackToGuideBtn: "📖 Pokaż Przewodnik Szybki Start",
+    quickStartInteractiveHint: "Kliknij dowolny narożnik na monitorze, aby podejrzeć szczegółowe wytyczne celowania",
+    quickStartStep1Title: "KROK 1: Lewy Górny Róg (Point 1 - TL)",
+    quickStartStep1Desc: "Odsuń się na odległość 1.5 – 2.5 m od ekranu. Unieś pistolet na wysokość klatki piersiowej i wyceluj dokładnie w celownik w lewym górnym rogu matrycy.",
+    quickStartStep1Tip: "💡 Wskazówka: Unikaj bezpośredniego padania światła słonecznego lub mocnych żarówek za monitorem, które mogłyby zakłócić kamerę IR.",
+    quickStartStep2Title: "KROK 2: Prawy Górny Róg (Point 2 - TR)",
+    quickStartStep2Desc: "Przesuń celownik w prawy górny narożnik monitora. Utrzymuj tę samą pozycję stojącą lub siedzącą bez przesuwania się na boki.",
+    quickStartStep2Tip: "💡 Wskazówka: Dystans pomiędzy punktem 1 a 2 pozwala algorytmowi obliczyć rzeczywistą poziomą rozpiętość matrycy oraz kąt nachylenia poziomego.",
+    quickStartStep3Title: "KROK 3: Prawy Dolny Róg (Point 3 - BR)",
+    quickStartStep3Desc: "Skieruj lufę w prawy dolny róg ekranu. Sprawdź, czy celownik pistoletu ma swobodne pole widzenia do paska diod LED.",
+    quickStartStep3Tip: "💡 Wskazówka: Uważaj, aby dłoń trzymająca pistolet ani pedał nożny nie zasłaniały dolnego paska podczerwieni.",
+    quickStartStep4Title: "KROK 4: Lewy Dolny Róg (Point 4 - BL)",
+    quickStartStep4Desc: "Wyceluj w ostatni celownik w lewym dolnym rogu. Ten punkt domyka pełny czworokąt perspektywiczny (Homography 3×3).",
+    quickStartStep4Tip: "💡 Wskazówka: Po zatwierdzeniu tego punktu algorytm automatycznie zlikwiduje efekt trapezu, przesunięcia paralaksy i błędy montażu paska IR!",
   },
   en: {
     // Navbar
@@ -379,5 +433,32 @@ export const translations: Record<Language, Translations> = {
     notifCalibrated: "Calibration completed successfully!",
     notifSpikeInjected: "Injected test spike (+4500 units)",
     notifAutoLearned: "Auto-tuned filter: median window {window}, stability {stability}%",
+
+    // Calibration & Quick Start
+    calibModalTitle: "G'AIM'E 4-POINT CALIBRATION",
+    calibHomographyBadge: "Homography 3×3",
+    calibModalSubtitle: "Corrects perspective keystone distortions and identifies optimal sensor input boundaries",
+    calibModeQuickStart: "🚀 Quick Start (Guide)",
+    calibModeManual: "🎯 Shoot Mode",
+    calibModeAutoDetect: "✨ Auto-Detect Sensitivity",
+    calibResetBtn: "Reset",
+    quickStartTitle: "QUICK START: 4-CORNER CALIBRATION GUIDE",
+    quickStartSubtitle: "Visual step-by-step walkthrough guiding you through aiming at the four corners of your monitor",
+    quickStartMonitorHeader: "MONITOR POSITIONING & AIMING SEQUENCE DIAGRAM",
+    quickStartStartCalibrationBtn: "Start Calibration Now",
+    quickStartBackToGuideBtn: "📖 Show Quick Start Guide",
+    quickStartInteractiveHint: "Click any corner on the screen to preview detailed aiming instructions",
+    quickStartStep1Title: "STEP 1: Top-Left Corner (Point 1 - TL)",
+    quickStartStep1Desc: "Step back 1.5 – 2.5 meters from the screen. Raise the lightgun to chest level and align your sights directly with the top-left crosshair.",
+    quickStartStep1Tip: "💡 Pro-Tip: Ensure no direct sunlight or bright halogen bulbs behind the monitor reflect into the IR camera sensor.",
+    quickStartStep2Title: "STEP 2: Top-Right Corner (Point 2 - TR)",
+    quickStartStep2Desc: "Shift your aim across to the top-right corner of the monitor. Maintain the same standing or seated position without leaning sideways.",
+    quickStartStep2Tip: "💡 Pro-Tip: The distance between points 1 and 2 enables the homography solver to determine true horizontal screen span and tilt.",
+    quickStartStep3Title: "STEP 3: Bottom-Right Corner (Point 3 - BR)",
+    quickStartStep3Desc: "Lower your aim to the bottom-right corner of the screen. Verify the gun's IR camera has an unobstructed line of sight to the emitter bar.",
+    quickStartStep3Tip: "💡 Pro-Tip: Ensure your forward shooting hand or foot pedal does not block the lower infrared emitter bar.",
+    quickStartStep4Title: "STEP 4: Bottom-Left Corner (Point 4 - BL)",
+    quickStartStep4Desc: "Aim at the final crosshair in the bottom-left corner. This point closes the perspective quadrangle (3×3 Homography Matrix).",
+    quickStartStep4Tip: "💡 Pro-Tip: Confirming this point instantly eliminates keystone distortion, parallax offsets, and emitter mounting skew!",
   },
 };

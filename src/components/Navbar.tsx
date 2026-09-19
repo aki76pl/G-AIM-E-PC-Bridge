@@ -28,7 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onDisconnectWebHid,
   isDownloadingZip,
 }) => {
-  const { t, language, toggleLanguage } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
 
   return (
     <header className="border-b border-neutral-800/80 bg-neutral-950/90 backdrop-blur sticky top-0 z-40 px-4 lg:px-6 py-3">
@@ -120,20 +120,38 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Action Buttons: Language Switcher, Win11 EXE, Calibrate, View Code, Download ZIP */}
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-          {/* Language Switcher Button */}
-          <button
-            id="nav-btn-language"
-            type="button"
-            onClick={toggleLanguage}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-neutral-900 border border-neutral-700 hover:border-cyan-500/50 text-neutral-200 text-xs font-semibold transition-all cursor-pointer"
-            title={language === 'pl' ? 'Przełącz język na English (EN)' : 'Switch language to Polish (PL)'}
-          >
-            <Globe className="w-3.5 h-3.5 text-cyan-400" />
-            <span className={language === 'pl' ? 'text-cyan-300 font-bold' : 'text-neutral-400'}>PL</span>
-            <span className="text-neutral-600">/</span>
-            <span className={language === 'en' ? 'text-cyan-300 font-bold' : 'text-neutral-400'}>EN</span>
-          </button>
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+          {/* Prominent Language Selector Segmented Control */}
+          <div className="flex items-center rounded-lg bg-neutral-900 p-0.5 border border-neutral-700 shadow-sm" title="Wybór języka / Language selection">
+            <button
+              id="nav-btn-lang-pl"
+              type="button"
+              onClick={() => setLanguage('pl')}
+              className={`flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                language === 'pl'
+                  ? 'bg-cyan-500 text-neutral-950 shadow-sm'
+                  : 'text-neutral-400 hover:text-neutral-200'
+              }`}
+              title="Język polski"
+            >
+              <span>🇵🇱</span>
+              <span>PL</span>
+            </button>
+            <button
+              id="nav-btn-lang-en"
+              type="button"
+              onClick={() => setLanguage('en')}
+              className={`flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                language === 'en'
+                  ? 'bg-cyan-500 text-neutral-950 shadow-sm'
+                  : 'text-neutral-400 hover:text-neutral-200'
+              }`}
+              title="English language"
+            >
+              <span>🇬🇧</span>
+              <span>EN</span>
+            </button>
+          </div>
 
           <button
             id="nav-btn-win11"
