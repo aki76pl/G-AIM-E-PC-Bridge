@@ -373,10 +373,20 @@ public class GunState
     path: 'GaimePcBridge/Models/CalibrationData.cs',
     name: 'CalibrationData.cs',
     category: 'Models',
-    description: '4-point calibration coordinates and 3x3 homography matrix',
+    description: '4-point calibration coordinates, 3x3 homography matrix, and optimal sensor ranges',
     content: `using System.Windows;
 
 namespace GaimePcBridge.Models;
+
+public class OptimalSensorRanges
+{
+    public int MinX { get; set; } = 850;
+    public int MaxX { get; set; } = 9150;
+    public int MinY { get; set; } = 850;
+    public int MaxY { get; set; } = 9150;
+    public double NoiseJitterPx { get; set; } = 4.5;
+    public double RecommendedFilterStability { get; set; } = 0.35;
+}
 
 public class CalibrationData
 {
@@ -386,6 +396,7 @@ public class CalibrationData
     public Point BottomLeft { get; set; } = new Point(850, 9150);
     public bool IsCalibrated { get; set; }
     public double[]? HomographyMatrix { get; set; }
+    public OptimalSensorRanges? OptimalRanges { get; set; }
 }`,
   },
   {
@@ -1059,15 +1070,15 @@ public static class EmulatorConfigGenerator
         int deadzone = 8,
         double sensitivity = 1.0)
     {
-        int p1MinX = (int)(p1Calib?.OptimalRanges?.MinX ?? 850);
-        int p1MaxX = (int)(p1Calib?.OptimalRanges?.MaxX ?? 9150);
-        int p1MinY = (int)(p1Calib?.OptimalRanges?.MinY ?? 850);
-        int p1MaxY = (int)(p1Calib?.OptimalRanges?.MaxY ?? 9150);
+        int p1MinX = (int)(p1Calib?.OptimalRanges?.MinX ?? (p1Calib != null ? Math.Min(p1Calib.TopLeft.X, p1Calib.BottomLeft.X) : 850));
+        int p1MaxX = (int)(p1Calib?.OptimalRanges?.MaxX ?? (p1Calib != null ? Math.Max(p1Calib.TopRight.X, p1Calib.BottomRight.X) : 9150));
+        int p1MinY = (int)(p1Calib?.OptimalRanges?.MinY ?? (p1Calib != null ? Math.Min(p1Calib.TopLeft.Y, p1Calib.TopRight.Y) : 850));
+        int p1MaxY = (int)(p1Calib?.OptimalRanges?.MaxY ?? (p1Calib != null ? Math.Max(p1Calib.BottomLeft.Y, p1Calib.BottomRight.Y) : 9150));
 
-        int p2MinX = (int)(p2Calib?.OptimalRanges?.MinX ?? 850);
-        int p2MaxX = (int)(p2Calib?.OptimalRanges?.MaxX ?? 9150);
-        int p2MinY = (int)(p2Calib?.OptimalRanges?.MinY ?? 850);
-        int p2MaxY = (int)(p2Calib?.OptimalRanges?.MaxY ?? 9150);
+        int p2MinX = (int)(p2Calib?.OptimalRanges?.MinX ?? (p2Calib != null ? Math.Min(p2Calib.TopLeft.X, p2Calib.BottomLeft.X) : 850));
+        int p2MaxX = (int)(p2Calib?.OptimalRanges?.MaxX ?? (p2Calib != null ? Math.Max(p2Calib.TopRight.X, p2Calib.BottomRight.X) : 9150));
+        int p2MinY = (int)(p2Calib?.OptimalRanges?.MinY ?? (p2Calib != null ? Math.Min(p2Calib.TopLeft.Y, p2Calib.TopRight.Y) : 850));
+        int p2MaxY = (int)(p2Calib?.OptimalRanges?.MaxY ?? (p2Calib != null ? Math.Max(p2Calib.BottomLeft.Y, p2Calib.BottomRight.Y) : 9150));
 
         string p1Matrix = p1Calib?.HomographyMatrix != null 
             ? string.Join(",", p1Calib.HomographyMatrix) 
@@ -2092,55 +2103,55 @@ public partial class MainWindow : Window
         KeyDown="Window_KeyDown">
     
     <Grid>
-        <Canvas Name="TargetCanvas" Background="Transparent">
+        <Canvas x:Name="TargetCanvas" Background="Transparent">
             <!-- Center Header & 4 Points Status Strip -->
-            <Border Name="BannerContainer" Canvas.Left="100" Canvas.Top="24" Background="#111827" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="10" Padding="20,12">
+            <Border x:Name="BannerContainer" Canvas.Left="100" Canvas.Top="24" Background="#111827" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="10" Padding="20,12">
                 <StackPanel HorizontalAlignment="Center" Width="700">
                     <DockPanel LastChildFill="False" Margin="0,0,0,8">
                         <TextBlock Text="KALIBRACJA 4 PUNKTÓW G'AIM'E" Foreground="#F8FAFC" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <Button Name="BtnToggleMode" Content="Tryb: Manualny Strzał" Click="BtnToggleMode_Click" Background="#0369A1" Foreground="White" FontWeight="SemiBold" FontSize="11" Padding="10,4" Margin="0,0,8,0" Cursor="Hand"/>
-                            <Button Name="BtnReset" Content="Resetuj" Click="BtnReset_Click" Background="#374151" Foreground="#E5E7EB" FontSize="11" Padding="8,4" Cursor="Hand"/>
+                            <Button x:Name="BtnToggleMode" Content="Tryb: Manualny Strzał" Click="BtnToggleMode_Click" Background="#0369A1" Foreground="White" FontWeight="SemiBold" FontSize="11" Padding="10,4" Margin="0,0,8,0" Cursor="Hand"/>
+                            <Button x:Name="BtnReset" Content="Resetuj" Click="BtnReset_Click" Background="#374151" Foreground="#E5E7EB" FontSize="11" Padding="8,4" Cursor="Hand"/>
                         </StackPanel>
                     </DockPanel>
 
                     <!-- 4 Points Status Strip -->
                     <UniformGrid Columns="4" Rows="1" Margin="0,0,0,10">
-                        <Border Name="CardPoint1" Background="#1F2937" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="3">
+                        <Border x:Name="CardPoint1" Background="#1F2937" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="3">
                             <StackPanel>
                                 <TextBlock Text="Point 1: TL" Foreground="#38BDF8" FontWeight="Bold" FontSize="11"/>
-                                <TextBlock Name="TxtStatusP1" Text="Point 1: Waiting" Foreground="#94A3B8" FontSize="10" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="TxtStatusP1" Text="Point 1: Waiting" Foreground="#94A3B8" FontSize="10" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
-                        <Border Name="CardPoint2" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="3">
+                        <Border x:Name="CardPoint2" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="3">
                             <StackPanel>
                                 <TextBlock Text="Point 2: TR" Foreground="#94A3B8" FontWeight="Bold" FontSize="11"/>
-                                <TextBlock Name="TxtStatusP2" Text="Point 2: Waiting" Foreground="#64748B" FontSize="10" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="TxtStatusP2" Text="Point 2: Waiting" Foreground="#64748B" FontSize="10" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
-                        <Border Name="CardPoint3" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="3">
+                        <Border x:Name="CardPoint3" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="3">
                             <StackPanel>
                                 <TextBlock Text="Point 3: BR" Foreground="#94A3B8" FontWeight="Bold" FontSize="11"/>
-                                <TextBlock Name="TxtStatusP3" Text="Point 3: Waiting" Foreground="#64748B" FontSize="10" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="TxtStatusP3" Text="Point 3: Waiting" Foreground="#64748B" FontSize="10" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
-                        <Border Name="CardPoint4" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="3">
+                        <Border x:Name="CardPoint4" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="3">
                             <StackPanel>
                                 <TextBlock Text="Point 4: BL" Foreground="#94A3B8" FontWeight="Bold" FontSize="11"/>
-                                <TextBlock Name="TxtStatusP4" Text="Point 4: Waiting" Foreground="#64748B" FontSize="10" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="TxtStatusP4" Text="Point 4: Waiting" Foreground="#64748B" FontSize="10" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
                     </UniformGrid>
 
-                    <TextBlock Name="TxtInstruction" Text="1/4: STRZEL W CZERWONY PUNKT (LEWY GÓRNY RÓG)" Foreground="#F8FAFC" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center"/>
-                    <TextBlock Name="TxtSubInstruction" Text="Naciśnij spust pistoletu G'AIM'E, kliknij myszą lub naciśnij SPACJĘ. (ESC aby wyjść)" Foreground="#94A3B8" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Center"/>
-                    <ProgressBar Name="PbarAutoHover" Height="4" Maximum="3000" Value="0" Foreground="#38BDF8" Background="#1E293B" Margin="0,6,0,0" Visibility="Collapsed"/>
-                    <TextBlock Name="TxtAimCoordinates" Text="Aktualna pozycja: RAW X=0 | Y=0" Foreground="#38BDF8" FontFamily="Consolas" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtInstruction" Text="1/4: STRZEL W CZERWONY PUNKT (LEWY GÓRNY RÓG)" Foreground="#F8FAFC" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtSubInstruction" Text="Naciśnij spust pistoletu G'AIM'E, kliknij myszą lub naciśnij SPACJĘ. (ESC aby wyjść)" Foreground="#94A3B8" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                    <ProgressBar x:Name="PbarAutoHover" Height="4" Maximum="3000" Value="0" Foreground="#38BDF8" Background="#1E293B" Margin="0,6,0,0" Visibility="Collapsed"/>
+                    <TextBlock x:Name="TxtAimCoordinates" Text="Aktualna pozycja: RAW X=0 | Y=0" Foreground="#38BDF8" FontFamily="Consolas" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
 
             <!-- Active Calibration Target (animated in code-behind) -->
-            <Canvas Name="ActiveTargetGroup" Canvas.Left="100" Canvas.Top="100" Cursor="Hand" MouseEnter="ActiveTargetGroup_MouseEnter" MouseLeave="ActiveTargetGroup_MouseLeave">
+            <Canvas x:Name="ActiveTargetGroup" Canvas.Left="100" Canvas.Top="100" Cursor="Hand" MouseEnter="ActiveTargetGroup_MouseEnter" MouseLeave="ActiveTargetGroup_MouseLeave">
                 <Ellipse Width="80" Height="80" Stroke="#EF4444" StrokeThickness="3" Canvas.Left="-40" Canvas.Top="-40">
                     <Ellipse.Fill>
                         <SolidColorBrush Color="#EF4444" Opacity="0.25"/>
@@ -2151,12 +2162,12 @@ public partial class MainWindow : Window
                 <Line X1="-55" Y1="0" X2="55" Y2="0" Stroke="#EF4444" StrokeThickness="2"/>
                 <Line X1="0" Y1="-55" X2="0" Y2="55" Stroke="#EF4444" StrokeThickness="2"/>
                 <Border Canvas.Left="-25" Canvas.Top="45" Background="#0F172A" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="10" Padding="6,2">
-                    <TextBlock Name="TxtTargetLabel" Text="Point 1" Foreground="#F8FAFC" FontWeight="Bold" FontSize="11"/>
+                    <TextBlock x:Name="TxtTargetLabel" Text="Point 1" Foreground="#F8FAFC" FontWeight="Bold" FontSize="11"/>
                 </Border>
             </Canvas>
 
             <!-- Live gun / cursor reticle -->
-            <Canvas Name="LiveCrosshair" Canvas.Left="-100" Canvas.Top="-100" IsHitTestVisible="False">
+            <Canvas x:Name="LiveCrosshair" Canvas.Left="-100" Canvas.Top="-100" IsHitTestVisible="False">
                 <Ellipse Width="18" Height="18" Stroke="#38BDF8" StrokeThickness="2" Canvas.Left="-9" Canvas.Top="-9"/>
                 <Line X1="-14" Y1="0" X2="14" Y2="0" Stroke="#38BDF8" StrokeThickness="1"/>
                 <Line X1="0" Y1="-14" X2="0" Y2="14" Stroke="#38BDF8" StrokeThickness="1"/>
@@ -2164,7 +2175,7 @@ public partial class MainWindow : Window
         </Canvas>
 
         <!-- White Flash on Shot Effect -->
-        <Rectangle Name="FlashOverlay" Fill="#FFFFFF" Opacity="0" IsHitTestVisible="False"/>
+        <Rectangle x:Name="FlashOverlay" Fill="#FFFFFF" Opacity="0" IsHitTestVisible="False"/>
     </Grid>
 </Window>`,
   },
@@ -2208,6 +2219,12 @@ public partial class CalibrationWindow : Window
     private const int RequiredHoverMs = 3000;
     private readonly List<Point> _currentCornerSamples = new();
 
+    // Safe dynamic lookups for controls (guarantees error-free compilation with both new and legacy XAML)
+    private Button? SafeBtnToggleMode => FindName("BtnToggleMode") as Button;
+    private ProgressBar? SafePbarAutoHover => FindName("PbarAutoHover") as ProgressBar;
+    private TextBlock? SafeTxtStatus(int idx) => FindName($"TxtStatusP{idx}") as TextBlock;
+    private Border? SafeCardPoint(int idx) => FindName($"CardPoint{idx}") as Border;
+
     public CalibrationWindow(GaimeHidService hidService)
     {
         InitializeComponent();
@@ -2233,17 +2250,17 @@ public partial class CalibrationWindow : Window
     private void BtnToggleMode_Click(object sender, RoutedEventArgs e)
     {
         _isAutoDetectMode = !_isAutoDetectMode;
-        if (BtnToggleMode != null)
+        if (SafeBtnToggleMode != null)
         {
-            BtnToggleMode.Content = _isAutoDetectMode ? "Tryb: Auto-Wykrywanie (3s)" : "Tryb: Manualny Strzał";
-            BtnToggleMode.Background = _isAutoDetectMode 
+            SafeBtnToggleMode.Content = _isAutoDetectMode ? "Tryb: Auto-Wykrywanie (3s)" : "Tryb: Manualny Strzał";
+            SafeBtnToggleMode.Background = _isAutoDetectMode 
                 ? new SolidColorBrush(Color.FromRgb(14, 165, 233)) 
                 : new SolidColorBrush(Color.FromRgb(3, 105, 161));
         }
 
-        if (PbarAutoHover != null)
+        if (SafePbarAutoHover != null)
         {
-            PbarAutoHover.Visibility = _isAutoDetectMode ? Visibility.Visible : Visibility.Collapsed;
+            SafePbarAutoHover.Visibility = _isAutoDetectMode ? Visibility.Visible : Visibility.Collapsed;
         }
 
         if (_isAutoDetectMode)
@@ -2254,7 +2271,7 @@ public partial class CalibrationWindow : Window
         {
             _hoverTimer.Stop();
             _hoverElapsedMs = 0;
-            if (PbarAutoHover != null) PbarAutoHover.Value = 0;
+            if (SafePbarAutoHover != null) SafePbarAutoHover.Value = 0;
         }
 
         PositionTarget();
@@ -2299,9 +2316,9 @@ public partial class CalibrationWindow : Window
             _hoverElapsedMs += 50;
             _currentCornerSamples.Add(new Point(_lastRawX, _lastRawY));
 
-            if (PbarAutoHover != null)
+            if (SafePbarAutoHover != null)
             {
-                PbarAutoHover.Value = Math.Min(RequiredHoverMs, _hoverElapsedMs);
+                SafePbarAutoHover.Value = Math.Min(RequiredHoverMs, _hoverElapsedMs);
             }
 
             if (TxtSubInstruction != null)
@@ -2319,7 +2336,7 @@ public partial class CalibrationWindow : Window
 
                 _hoverElapsedMs = 0;
                 _currentCornerSamples.Clear();
-                if (PbarAutoHover != null) PbarAutoHover.Value = 0;
+                if (SafePbarAutoHover != null) SafePbarAutoHover.Value = 0;
 
                 RegisterHit(new Point(avgX, avgY), isRawCoordinates: true);
             }
@@ -2327,7 +2344,7 @@ public partial class CalibrationWindow : Window
         else
         {
             _hoverElapsedMs = Math.Max(0, _hoverElapsedMs - 25);
-            if (PbarAutoHover != null) PbarAutoHover.Value = _hoverElapsedMs;
+            if (SafePbarAutoHover != null) SafePbarAutoHover.Value = _hoverElapsedMs;
 
             if (TxtSubInstruction != null)
             {
@@ -2339,8 +2356,8 @@ public partial class CalibrationWindow : Window
 
     private void UpdatePointStatusCards()
     {
-        TextBlock[] statusTexts = { TxtStatusP1, TxtStatusP2, TxtStatusP3, TxtStatusP4 };
-        Border[] cards = { CardPoint1, CardPoint2, CardPoint3, CardPoint4 };
+        TextBlock?[] statusTexts = { SafeTxtStatus(1), SafeTxtStatus(2), SafeTxtStatus(3), SafeTxtStatus(4) };
+        Border?[] cards = { SafeCardPoint(1), SafeCardPoint(2), SafeCardPoint(3), SafeCardPoint(4) };
 
         for (int i = 0; i < 4; i++)
         {
@@ -2632,6 +2649,11 @@ public partial class CalibrationWindow : Window
 
         double[]? h = PerspectiveTransform.ComputeHomography(tl, tr, br, bl);
 
+        int minX = (int)Math.Min(tl.X, bl.X);
+        int maxX = (int)Math.Max(tr.X, br.X);
+        int minY = (int)Math.Min(tl.Y, tr.Y);
+        int maxY = (int)Math.Max(bl.Y, br.Y);
+
         ResultData = new CalibrationData
         {
             TopLeft = tl,
@@ -2639,7 +2661,16 @@ public partial class CalibrationWindow : Window
             BottomRight = br,
             BottomLeft = bl,
             IsCalibrated = true,
-            HomographyMatrix = h
+            HomographyMatrix = h,
+            OptimalRanges = new OptimalSensorRanges
+            {
+                MinX = minX,
+                MaxX = maxX,
+                MinY = minY,
+                MaxY = maxY,
+                NoiseJitterPx = 4.0,
+                RecommendedFilterStability = 0.35
+            }
         };
 
         DialogResult = true;
