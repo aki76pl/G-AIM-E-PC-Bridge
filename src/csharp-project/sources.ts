@@ -43,12 +43,9 @@ EndGlobal`,
     <Authors>G'AIM'E Community</Authors>
     <Description>Windows lightgun HID bridge, 4-point perspective calibration, and PCSX2 GunCon 2 integration for G'AIM'E (2E2C:0631)</Description>
 
-    <!-- ZGODNOŚĆ Z IZOLACJĄ RDZENIA WINDOWS 11 (CORE ISOLATION, MEMORY INTEGRITY & HVCI) -->
-    <!-- 1. Sprzętowo wymuszana ochrona stosu (Control-flow Enforcement Technology / Shadow Stacks) -->
-    <CETCompat>true</CETCompat>
-    <!-- 2. Pełne 64-bitowe ASLR (High Entropy Address Space Layout Randomization) -->
+    <!-- 64-bitowe ASLR (High Entropy Address Space Layout Randomization) -->
     <HighEntropyVA>true</HighEntropyVA>
-    <!-- 3. Manifest zgodności Windows 11 i trybu User-Mode (brak niebezpiecznych sterowników jądra) -->
+    <!-- Manifest zgodności Windows 11 i trybu User-Mode -->
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Deterministic>true</Deterministic>
 
@@ -72,16 +69,15 @@ EndGlobal`,
     path: 'GaimePcBridge/app.manifest',
     name: 'app.manifest',
     category: 'Project',
-    description: 'Manifest zgodności z Windows 11, trybu User-Mode i Izolacji Rdzenia (HVCI)',
+    description: 'Manifest zgodności z Windows 11 i trybu User-Mode',
     content: `<?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
   <assemblyIdentity version="1.0.0.0" name="GaimePcBridge.app"/>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
     <security>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-        <!-- asInvoker: Aplikacja działa w bezpiecznym trybie użytkownika (User Mode).
-             Brak niebezpiecznych żądań administratora i brak sterowników jądra,
-             co gwarantuje pełną zgodność z Izolacją Rdzenia Windows 11 (Memory Integrity) -->
+        <!-- asInvoker: Aplikacja działa w standardowym trybie użytkownika (User Mode).
+             Brak niebezpiecznych żądań administratora i brak konieczności instalacji sterowników jądra. -->
         <requestedExecutionLevel level="asInvoker" uiAccess="false" />
       </requestedPrivileges>
     </security>
@@ -418,7 +414,455 @@ public class FilterConfig
         get => EnableSpikeFilter;
         set => EnableSpikeFilter = value;
     }
-}`,
+}
+`,
+  },
+  {
+    path: 'GaimePcBridge/Models/GameProfile.cs',
+    name: 'GameProfile.cs',
+    category: 'Models',
+    description: 'Game and emulator profiles across RetroArch (Snes9x 1.62.3), PCSX2, MAME, Sega Model 2, TeknoParrot and DemulShooter',
+    content: `using System.Collections.Generic;
+
+namespace GaimePcBridge.Models;
+
+public class GameProfile
+{
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string System { get; set; } = "";
+    public string Emulator { get; set; } = "RetroArch"; // RetroArch, PCSX2, MAME, Model 2, TeknoParrot, DemulShooter
+    public string RomName { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string PedalAction { get; set; } = "RELOAD";
+    public bool OffscreenReload { get; set; } = true;
+    public double RecommendedFilterStability { get; set; } = 0.35;
+    public double Deadzone { get; set; } = 4.0;
+    public double SensitivityMultiplier { get; set; } = 1.0;
+    public string TriggerMapping { get; set; } = "Lewy Przycisk Myszy (LMB)";
+    public string ReloadMapping { get; set; } = "Prawy Przycisk (RMB)";
+    public string PedalMapping { get; set; } = "Spacja / Środkowy Przycisk";
+    public string StartMapping { get; set; } = "Klawisz Enter";
+    public string Notes { get; set; } = "";
+    public bool IsJustifier { get; set; } = false;
+
+    public static List<GameProfile> GetAllProfiles()
+    {
+        return new List<GameProfile>
+        {
+            // === RETROARCH (SNES9X 1.62.3) ===
+            new GameProfile
+            {
+                Id = "battle_clash_snes",
+                Name = "Battle Clash (Space Bazooka)",
+                System = "Super Nintendo (SNES)",
+                Emulator = "RetroArch (Snes9x)",
+                RomName = "battleclash",
+                Description = "Kultowy mecha-shooter Super Scope. Wymaga niszczenia osłon i strzałów ładowanych (Charge Shot) w rdzenie bossów.",
+                PedalAction = "CHARGE / RELOAD",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.30,
+                Deadzone = 3.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał normalny",
+                ReloadMapping = "Cursor / Przytrzymanie — Charge Shot",
+                PedalMapping = "Pedał USB (Spacja) — Błyskawiczne ładowanie energii",
+                StartMapping = "Start — Enter",
+                Notes = "Snes9x 1.62.3: Port 2 ustawiony jako Nintendo Super Scope (ID 260). Overscan: disabled.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "metal_combat_snes",
+                Name = "Metal Combat: Falcon's Revenge",
+                System = "Super Nintendo (SNES)",
+                Emulator = "RetroArch (Snes9x)",
+                RomName = "metalcom",
+                Description = "Kontynuacja Battle Clash z mechem ST Falcon. Nowe rodzaje bomb, pociski plazmowe i tryb walki 2 graczy.",
+                PedalAction = "BOMB / DEFENSE",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.30,
+                Deadzone = 3.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Laser ST Falcon",
+                ReloadMapping = "RMB — Zrzut Bomby Plazmowej",
+                PedalMapping = "Pedał USB (Spacja) — Tarcza energetyczna",
+                StartMapping = "Start — Enter",
+                Notes = "Zalecane wyłączenie Hi-Res Blend dla absolutnej czystości celownika w 60fps.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "yoshis_safari_snes",
+                Name = "Yoshi's Safari",
+                System = "Super Nintendo (SNES)",
+                Emulator = "RetroArch (Snes9x)",
+                RomName = "yoshisaf",
+                Description = "Jedyny oficjalny rail-shooter Mario/Yoshi w Mode 7! Mario strzela z Super Scope siedząc na grzbiecie Yoshiego.",
+                PedalAction = "JUMP",
+                OffscreenReload = false,
+                RecommendedFilterStability = 0.25,
+                Deadzone = 2.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Ogień ciągły",
+                ReloadMapping = "RMB — Zmiana oręża (Monety / Skorupy)",
+                PedalMapping = "Pedał USB (Spacja) — Skok Yoshiego (Jump)",
+                StartMapping = "Start — Enter",
+                Notes = "Pedał USB mapowany do skoku eliminuje potrzebę odrywania ręki od pistoletu podczas pokonywania przepaści.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "super_scope_6_snes",
+                Name = "Super Scope 6",
+                System = "Super Nintendo (SNES)",
+                Emulator = "RetroArch (Snes9x)",
+                RomName = "sscope6",
+                Description = "Zestaw premierowy Nintendo: Blastris A/B, LazerBlazer (Intercept, Engage, Confront) oraz Mole Patrol z wbudowaną kalibracją.",
+                PedalAction = "PAUSE / TURBO",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.35,
+                Deadzone = 4.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał Laserowy",
+                ReloadMapping = "RMB — Cursor",
+                PedalMapping = "Pedał USB (Spacja) — Turbo Fire",
+                StartMapping = "Start — Enter",
+                Notes = "Zawiera oryginalny ekran kalibracji Nintendo 3-punktowy, który idealnie pokrywa się z homografią G'AIM'E.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "tin_star_snes",
+                Name = "Tin Star",
+                System = "Super Nintendo (SNES)",
+                Emulator = "RetroArch (Snes9x)",
+                RomName = "tinstar",
+                Description = "Świetny westernowy rail-shooter science-fiction. Błyskawiczne pojedynki rewolwerowe (Quick Draw) i zręcznościowe minigry.",
+                PedalAction = "RELOAD",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.25,
+                Deadzone = 3.0,
+                SensitivityMultiplier = 1.1,
+                TriggerMapping = "Spust (LMB) — Strzał z rewolweru",
+                ReloadMapping = "RMB / Poza ekranem — Błyskawiczny Reload",
+                PedalMapping = "Pedał USB (Spacja) — Przeładowanie bębenka",
+                StartMapping = "Start — Enter",
+                Notes = "Off-screen reload działa wyśmienicie dzięki optycznemu filtrowi skoków G'AIM'E.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "lethal_enforcers_snes",
+                Name = "Lethal Enforcers (SNES)",
+                System = "Super Nintendo (SNES)",
+                Emulator = "RetroArch (Snes9x)",
+                RomName = "lenforce",
+                Description = "Port arcade na Konami Justifier (niebieski pistolet). Realistyczne ujęcia digitalizowanych przestępców.",
+                PedalAction = "RELOAD",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.35,
+                Deadzone = 4.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Konami Justifier Trigger",
+                ReloadMapping = "RMB / Poza ekran — Reload",
+                PedalMapping = "Pedał USB (Spacja) — Reload bębenka",
+                StartMapping = "Start — Enter",
+                Notes = "W Snes9x 1.62.3 wymaga urządzenia Konami Justifier (ID 516) zamiast Super Scope!",
+                IsJustifier = true
+            },
+            new GameProfile
+            {
+                Id = "terminator2_snes",
+                Name = "T2: The Arcade Game (RetroArch SNES)",
+                System = "Super Nintendo / SNES (RetroArch - Snes9x 1.62.3)",
+                Emulator = "RetroArch (Snes9x)",
+                RomName = "t2arcade",
+                Description = "Wierna adaptacja zręcznościowego hitu arcade na Super Nintendo z obsługą pistoletu Nintendo Super Scope. Odpieraj hordy Endo-szkieletów T-800, latających HK i czołgów Skynetu.",
+                PedalAction = "CUSTOM",
+                OffscreenReload = false,
+                RecommendedFilterStability = 0.32,
+                Deadzone = 4.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Ogień maszynowy (Rapid Fire Gun)",
+                ReloadMapping = "RMB — Wyrzutnia rakiet (Missile Launcher)",
+                PedalMapping = "Pedał USB (Spacja) — Salwa rakietowa Skynet",
+                StartMapping = "Start — Enter",
+                Notes = "W Snes9x wymaga urządzenia Nintendo Super Scope (ID 260) w Porcie 2. Pedał USB lub prawy przycisk myszy wyzwala pociski rakietowe.",
+                IsJustifier = false
+            },
+
+            // === PCSX2 (GUNCON 2) ===
+            new GameProfile
+            {
+                Id = "time_crisis_3",
+                Name = "Time Crisis 3",
+                System = "PlayStation 2",
+                Emulator = "PCSX2",
+                RomName = "tc3",
+                Description = "Klasyk arcade z systemem zmiany 4 broni (Handgun, Machine Gun, Shotgun, Grenade) i pedałem ukrycia.",
+                PedalAction = "DUCK / WEAPON",
+                OffscreenReload = false,
+                RecommendedFilterStability = 0.35,
+                Deadzone = 4.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał GunCon 2",
+                ReloadMapping = "Przycisk A (RMB) — Zmiana broni",
+                PedalMapping = "Pedał USB (Spacja) — Ukrycie za przeszkodą (Przycisk B)",
+                StartMapping = "Start — Enter",
+                Notes = "Skonfiguruj wtyczkę USB PCSX2 jako GunCon 2 z przypisaniem myszy.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "time_crisis_2",
+                Name = "Time Crisis 2",
+                System = "PlayStation 2",
+                Emulator = "PCSX2",
+                RomName = "tc2",
+                Description = "Najsłynniejsza część serii z pełną obsługą trybu dla 2 graczy i pedałem ukrycia.",
+                PedalAction = "DUCK / RELOAD",
+                OffscreenReload = false,
+                RecommendedFilterStability = 0.35,
+                Deadzone = 4.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Ogień",
+                ReloadMapping = "Przycisk A (RMB) — Pauza / Opcje",
+                PedalMapping = "Pedał USB (Spacja) — Wychylenie zza osłony",
+                StartMapping = "Start — Enter",
+                Notes = "Obsługuje 2 pistolety G'AIM'E w trybie Port 1 + Port 2 w PCSX2.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "vampire_night",
+                Name = "Vampire Night",
+                System = "PlayStation 2",
+                Emulator = "PCSX2",
+                RomName = "vampnight",
+                Description = "Kooperacyjny shooter w mrocznym gotyckim zamku od Namco & Wow Entertainment. Błyskawiczne tempo.",
+                PedalAction = "RELOAD / SPECIAL",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.15,
+                Deadzone = 2.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał",
+                ReloadMapping = "RMB / Strzał poza ekran — Szybkie Przeładowanie",
+                PedalMapping = "Pedał USB (Spacja) — Atak specjalny",
+                StartMapping = "Start — Enter",
+                Notes = "Niski filtr (15%) zapewnia zerowe opóźnienie przy eliminacji wampirów.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "dino_stalker",
+                Name = "Dino Stalker / Gun Survivor 3",
+                System = "PlayStation 2",
+                Emulator = "PCSX2",
+                RomName = "dinostalk",
+                Description = "Strzelanka FPP z uniwersum Dino Crisis z bezpośrednią kontrolą poruszania się i celowaniem.",
+                PedalAction = "MOVE / STRAFE",
+                OffscreenReload = false,
+                RecommendedFilterStability = 0.45,
+                Deadzone = 5.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Ogień",
+                ReloadMapping = "RMB — Zmiana broni",
+                PedalMapping = "Pedał USB (Spacja) — Krok w przód / Unik",
+                StartMapping = "Start — Enter",
+                Notes = "Wyższy deadband zapobiega pływaniu kamery przy delikatnych drganiach ręki.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "ninja_assault",
+                Name = "Ninja Assault",
+                System = "PlayStation 2",
+                Emulator = "PCSX2",
+                RomName = "ninjaass",
+                Description = "Dynamiczny japoński shooter arcade w epoce feudalnej z magią Ninjutsu i potężnymi bossami.",
+                PedalAction = "NINJUTSU",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.25,
+                Deadzone = 3.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał z pistoletu ninja",
+                ReloadMapping = "RMB — Przeładowanie poza ekranem",
+                PedalMapping = "Pedał USB (Spacja) — Aktywacja zwoju Ninjutsu",
+                StartMapping = "Start — Enter",
+                Notes = "Off-screen reload z automatycznym rozpoznaniem skrajnych pikseli ekranu.",
+                IsJustifier = false
+            },
+
+            // === MAME (ARCADE) ===
+            new GameProfile
+            {
+                Id = "point_blank_mame",
+                Name = "Point Blank / Gunvari (Namco)",
+                System = "Arcade (MAME)",
+                Emulator = "MAME",
+                RomName = "ptblank",
+                Description = "Legendarna gra zręcznościowa wymagająca absolutnej precyzji pikselowej (strzały w cele o wielkości 2 pikseli).",
+                PedalAction = "COIN / START",
+                OffscreenReload = false,
+                RecommendedFilterStability = 0.60,
+                Deadzone = 6.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał GunCode 1",
+                ReloadMapping = "RMB — Przycisk 2",
+                PedalMapping = "Pedał USB (Spacja) — Start / Wrzut monety",
+                StartMapping = "Start 1 — Klawisz 1",
+                Notes = "MAME RawInput: lightgun 1, lightgun_device = rawinput, dual_lightguns = 1.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "area51_mame",
+                Name = "Area 51",
+                System = "Arcade (MAME)",
+                Emulator = "MAME",
+                RomName = "area51",
+                Description = "Klasyczny horror SF na automatach Midway. Digitalizowane postaci obcych i potężne strzelby.",
+                PedalAction = "RELOAD / GRENADE",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.35,
+                Deadzone = 4.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał ze strzelby",
+                ReloadMapping = "RMB / Poza ekranem — Reload",
+                PedalMapping = "Pedał USB (Spacja) — Rzut granatem",
+                StartMapping = "Start 1 — Klawisz 1",
+                Notes = "MAME automatycznie obsługuje auto-reload przy strzale poza ekran w pliku area51.cfg.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "carnevil_mame",
+                Name = "CarnEvil",
+                System = "Arcade (MAME)",
+                Emulator = "MAME",
+                RomName = "carnevil",
+                Description = "Kultowy, brutalny shooter w nawiedzonym lunaparku Midway 3D (pistolet shotgun z pompką).",
+                PedalAction = "PUMP RELOAD",
+                OffscreenReload = false,
+                RecommendedFilterStability = 0.30,
+                Deadzone = 3.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał ze strzelby",
+                ReloadMapping = "RMB — Pompka przeładowania (Pump Action)",
+                PedalMapping = "Pedał USB (Spacja) — Pompka przeładowania",
+                StartMapping = "Start 1 — Klawisz 1",
+                Notes = "Pedał USB doskonale symuluje fizyczną pompkę automatu CarnEvil!",
+                IsJustifier = false
+            },
+
+            // === SEGA MODEL 2 ===
+            new GameProfile
+            {
+                Id = "virtua_cop_1",
+                Name = "Virtua Cop 1",
+                System = "Sega Model 2",
+                Emulator = "Model 2",
+                RomName = "vcop",
+                Description = "Pionier celowników 3D i systemu 'Lock-On Sight' od SEGA AM2.",
+                PedalAction = "RELOAD",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.25,
+                Deadzone = 2.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał Virtua Gun",
+                ReloadMapping = "RMB / Poza ekranem — Błyskawiczny Reload",
+                PedalMapping = "Pedał USB (Spacja) — Przeładowanie",
+                StartMapping = "Start — Klawisz 1",
+                Notes = "Wymaga RawInput w EMULATOR.INI lub DemulShooter -target=model2 -rom=vcop.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "virtua_cop_2",
+                Name = "Virtua Cop 2",
+                System = "Sega Model 2",
+                Emulator = "Model 2",
+                RomName = "vcop2",
+                Description = "Pościgi samochodowe, rozgałęziające się ścieżki i dynamiczna akcja w pełnym 3D 60fps.",
+                PedalAction = "RELOAD",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.25,
+                Deadzone = 2.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał",
+                ReloadMapping = "RMB — Reload",
+                PedalMapping = "Pedał USB (Spacja) — Reload magazynka",
+                StartMapping = "Start — Klawisz 1",
+                Notes = "Pełna kompatybilność z DemulShooter dla 2 graczy jednocześnie.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "house_of_the_dead_1",
+                Name = "The House of the Dead",
+                System = "Sega Model 2",
+                Emulator = "Model 2",
+                RomName = "hotd",
+                Description = "Pierwsza, niezrównana odsłona sagi walki z zombie dr. Curiena w rezydencji AM1.",
+                PedalAction = "RELOAD",
+                OffscreenReload = true,
+                RecommendedFilterStability = 0.30,
+                Deadzone = 3.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał",
+                ReloadMapping = "RMB — Reload",
+                PedalMapping = "Pedał USB (Spacja) — Błyskawiczny reload",
+                StartMapping = "Start — Klawisz 1",
+                Notes = "Strzały poza ekran natychmiast przeładowują magazynek w Model 2.",
+                IsJustifier = false
+            },
+
+            // === TEKNOPARROT ===
+            new GameProfile
+            {
+                Id = "hotd4_tp",
+                Name = "The House of the Dead 4",
+                System = "Arcade (Sega Lindbergh)",
+                Emulator = "TeknoParrot",
+                RomName = "hotd4",
+                Description = "Nowoczesna odsłona na platformie Sega Lindbergh z karabinem maszynowym Uzi i granatami.",
+                PedalAction = "GRENADE / RELOAD",
+                OffscreenReload = false,
+                RecommendedFilterStability = 0.35,
+                Deadzone = 4.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Ogień ciągły Uzi",
+                ReloadMapping = "RMB — Potrząśnięcie (Shake Reload)",
+                PedalMapping = "Pedał USB (Spacja) — Rzut Granatem",
+                StartMapping = "Start — Enter",
+                Notes = "TeknoParrot z DemulShooter eliminuje potrzebę machania pistoletem przy przeładowaniu.",
+                IsJustifier = false
+            },
+            new GameProfile
+            {
+                Id = "tc5_tp",
+                Name = "Time Crisis 5",
+                System = "Arcade (Namco ES3)",
+                Emulator = "TeknoParrot",
+                RomName = "tc5",
+                Description = "Nowoczesny Time Crisis z podwójnym pedałem nożnym (Lewy Pedał: flankowanie z lewej, Prawy Pedał: z prawej).",
+                PedalAction = "DUAL PEDAL",
+                OffscreenReload = false,
+                RecommendedFilterStability = 0.35,
+                Deadzone = 4.0,
+                SensitivityMultiplier = 1.0,
+                TriggerMapping = "Spust (LMB) — Strzał",
+                ReloadMapping = "RMB — Prawy pedał flankowania",
+                PedalMapping = "Pedał USB (Spacja) — Lewy pedał flankowania",
+                StartMapping = "Start — Enter",
+                Notes = "Obsługuje podwójny pedał (Dual-Pedal) w G'AIM'E dla manewrów oskrzydlających.",
+                IsJustifier = false
+            }
+        };
+    }
+}
+`,
   },
   {
     path: 'GaimePcBridge/Services/PerspectiveTransform.cs',
@@ -680,6 +1124,25 @@ public class JitterFilter
         _consecutiveOutliers = 0;
         TotalRejected = 0;
         LastJump = 0;
+    }
+
+    /// <summary>
+    /// Auto-learns optimal median window and stability vs speed based on sampled optical sensor jitter over a 2-second hold-still session.
+    /// </summary>
+    public static (int RecommendedMedian, double RecommendedStability) AutoTune(IEnumerable<Point> samplePoints)
+    {
+        var list = samplePoints.ToList();
+        if (list.Count < 5) return (3, 0.35);
+
+        double meanX = list.Average(p => p.X);
+        double meanY = list.Average(p => p.Y);
+        double variance = list.Average(p => Math.Pow(p.X - meanX, 2) + Math.Pow(p.Y - meanY, 2));
+        double stdDev = Math.Sqrt(variance);
+
+        if (stdDev < 2.0) return (1, 0.20);
+        if (stdDev <= 5.5) return (3, 0.35);
+        if (stdDev <= 12.0) return (3, 0.52);
+        return (5, 0.68);
     }
 }`,
   },
@@ -1136,6 +1599,11 @@ public static class EmulatorConfigGenerator
         return sb.ToString();
     }
 
+    public static string GenerateMameDefaultConfig()
+    {
+        return GenerateMameGameCfg("default", "Standard Arcade (Default)");
+    }
+
     public static string GenerateMameGameCfg(string romName, string gameName)
     {
         return $@"<?xml version=""1.0""?>
@@ -1212,6 +1680,117 @@ input_remap_port_p1 = ""0""
 input_remap_port_p2 = ""1""
 ";
     }
+
+    public static string GenerateRetroArchCfg(int screenW = 1920, int screenH = 1080)
+    {
+        return $@"# ==============================================================================
+# RetroArch Global Lightgun RawInput Configuration (retroarch.cfg)
+# Target: G'AIM'E (2E2C:0631) Absolute Pointer / Lightgun Mode
+# ==============================================================================
+input_driver = ""raw""
+input_auto_mouse_grab = ""true""
+input_mouse_index = ""0""
+input_player1_mouse_index = ""0""
+input_player2_mouse_index = ""0""
+input_overlay_opacity = ""0.000000""
+video_fullscreen = ""true""
+video_windowed_fullscreen = ""true""
+video_aspect_ratio_auto = ""false""
+aspect_ratio_index = ""23""
+custom_viewport_width = ""{screenW}""
+custom_viewport_height = ""{screenH}""
+";
+    }
+
+    public static string GenerateMameIni(string romName = "ptblank")
+    {
+        return $@"# ==============================================================================
+# MAME Core Lightgun Configuration (mame.ini)
+# Auto-generated by G'AIM'E PC Bridge
+# ==============================================================================
+# CORE INPUT OPTIONS
+mouse                     1
+lightgun                  1
+joystick                  1
+lightgun_device           rawinput
+mouse_device              rawinput
+dual_lightguns            1
+lightgun_reload           1
+offscreen_reload          1
+
+# OSD INPUT MAPPING
+gun_provider              rawinput
+mouse_provider            rawinput
+";
+    }
+
+    public static string GenerateModel2Ini(string romName = "vcop")
+    {
+        return $@"[Renderer]
+FullScreen=1
+WideScreen=0
+AutoFull=1
+
+[Input]
+UseRawInput=1
+RawInputMouse=1
+Lightgun=1
+DrawCrosshair=0
+
+; Mapowanie G'AIM'E dla {romName}
+; GunCon / RawInput obsługiwane bezpośrednio przez Windows User-Mode SendInput
+";
+    }
+
+    public static string GenerateTeknoParrotConfig(string gameName, string romName)
+    {
+        return $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<!-- TeknoParrot UserProfile for {gameName} ({romName}) -->
+<!-- Generated by G'AIM'E PC Bridge -->
+<GameProfile>
+  <GamePath>ELF/{romName}.exe</GamePath>
+  <TestMenuKey>F1</TestMenuKey>
+  <ServiceKey>F2</ServiceKey>
+  <CoinKey>5</CoinKey>
+  <GunTriggerP1>MouseLeft</GunTriggerP1>
+  <GunReloadP1>MouseRight</GunReloadP1>
+  <GunPedalP1>Space</GunPedalP1>
+  <GunType>RawInputMouse</GunType>
+  <UseDemulShooter>true</UseDemulShooter>
+</GameProfile>";
+    }
+
+    public static string GeneratePcsx2Snippet(string gameName)
+    {
+        return $@"# ==============================================================================
+# PCSX2 v1.7 / v2.0 - Konfiguracja Wtyczki USB dla {gameName}
+# ==============================================================================
+[USB]
+Port1 = GunCon2
+Port2 = None
+
+[GunCon2]
+# Typ urządzenia: Mysz z absolutnym wskaźnikiem Windows (G'AIM'E User-Mode)
+Device = Mouse
+Trigger = MouseLeft (LMB)
+ButtonA_Reload = MouseRight (RMB)
+ButtonB_Pedal = Space / MiddleClick
+ButtonStart = Enter
+ButtonSelect = Escape
+D-Pad = ArrowKeys
+Calibration = Auto (Zarządzana przez 4-punktową homografię G'AIM'E PC Bridge)
+";
+    }
+
+    public static string GenerateDemulShooterBat(string romName, string targetSystem = "snes")
+    {
+        return $@"@echo off
+rem ==============================================================================
+rem Skrypt startowy DemulShooter dla {romName} ({targetSystem})
+rem ==============================================================================
+start """" /D ""C:\DemulShooter"" DemulShooter.exe -target={targetSystem} -rom={romName}
+";
+    }
 }`,
   },
   {
@@ -1222,7 +1801,7 @@ input_remap_port_p2 = ""1""
     content: `<Window x:Class="GaimePcBridge.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="G'AIM'E PC Bridge v1.0 — Zgodny z Izolacją Rdzenia (HVCI) • PCSX2 GunCon 2" 
+        Title="G'AIM'E PC Bridge v1.0 — Mostek USB HID &amp; Kalibracja Celownika" 
         Height="880" Width="1260" MinHeight="720" MinWidth="1050"
         Background="{StaticResource BgPrimary}"
         WindowStartupLocation="CenterScreen">
@@ -1371,6 +1950,41 @@ input_remap_port_p2 = ""1""
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Modern TabControl & TabItem Styles -->
+        <Style x:Key="ModernTabControlStyle" TargetType="{x:Type TabControl}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <Style x:Key="ModernTabItemStyle" TargetType="{x:Type TabItem}">
+            <Setter Property="Background" Value="#0F172A" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Border x:Name="TabBorder" Background="#0F172A" BorderBrush="#222B3D" BorderThickness="1,1,1,0" CornerRadius="8,8,0,0" Margin="0,0,6,0" Padding="18,9">
+                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header" RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#131722" />
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#06B6D4" />
+                                <Setter TargetName="TabBorder" Property="BorderThickness" Value="1,2,1,0" />
+                                <Setter Property="Foreground" Value="#38BDF8" />
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#1E293B" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     
     <Grid Margin="16">
@@ -1401,10 +2015,11 @@ input_remap_port_p2 = ""1""
                             <TextBlock Text="120 Hz HID" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
                         </Border>
                     </StackPanel>
-                    <TextBlock Text="Mostek HID o zerowym opóźnieniu z 4-punktową homografią perspektywiczną i filtrem skoków dla PCSX2 GunCon 2" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,3,0,0"/>
+                    <TextBlock Text="Mostek HID o zerowym opóźnieniu z 4-punktową homografią perspektywiczną i filtrem skoków dla RetroArch, MAME, PCSX2 i DemulShooter" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,3,0,0"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Name="BtnSwitchToEmulators" Content="🎮 Integracje Emulatorów" Click="BtnSwitchToEmulators_Click" Background="#7C3AED" Foreground="#FFFFFF" FontWeight="Bold" Padding="13,7" Margin="0,0,8,0" Cursor="Hand"/>
                     <Button Name="BtnTestSpike" Content="⚡ Test Skoku (+2500)" Click="BtnTestSpike_Click" Background="#334155" Foreground="#38BDF8" FontWeight="SemiBold" Padding="12,7" Margin="0,0,8,0"/>
                     <Button Name="BtnCalibrate" Content="🎯 Kalibruj (4 Punkty)" Click="BtnCalibrate_Click" Background="{StaticResource AccentAmber}" Foreground="#000" FontWeight="Bold" Padding="14,7" Margin="0,0,8,0"/>
                     <Button Name="BtnToggleConnect" Content="Połącz z USB" Click="BtnToggleConnect_Click" Background="{StaticResource AccentCyan}" Foreground="#000" FontWeight="Bold" Padding="14,7"/>
@@ -1425,17 +2040,23 @@ input_remap_port_p2 = ""1""
                     <TextBlock Text="Tryb User-Mode (Win32 SendInput). Brak sterowników jądra, brak instalacji .NET Runtime." Foreground="#94A3B8" FontSize="11"/>
                 </StackPanel>
                 <Border Grid.Column="1" Background="#064E3B" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
-                    <TextBlock Text="🛡️ Zgodny z Izolacją Rdzenia &amp; HVCI" Foreground="#6EE7B7" FontSize="10" FontWeight="Bold"/>
+                    <TextBlock Text="⚡ Win32 User-Mode (SendInput)" Foreground="#6EE7B7" FontSize="10" FontWeight="Bold"/>
                 </Border>
             </Grid>
         </Border>
 
-        <!-- Main Body: 2 Columns -->
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="400"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- Main Body: Two Primary Tabs -->
+        <TabControl Name="MainTabControl" Grid.Row="2" Style="{StaticResource ModernTabControlStyle}">
+            
+            <!-- ========================================================================= -->
+            <!-- TAB 1: MOSTEK HID & TELEMETRIA LIVE -->
+            <!-- ========================================================================= -->
+            <TabItem Header="🎯  MOSTEK HID &amp; TELEMETRIA LIVE" Style="{StaticResource ModernTabItemStyle}">
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="400"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
             <!-- Left Controls Column (Inside ScrollViewer so all cards fit cleanly) -->
             <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,12,0" Padding="0,0,6,0">
@@ -1524,30 +2145,40 @@ input_remap_port_p2 = ""1""
                         </StackPanel>
                     </Border>
 
-                    <!-- Card 4: PROFIL GRY (PCSX2 GunCon 2) -->
+                    <!-- Card 4: SZYBKI PROFIL GRY & EMULATOR -->
                     <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                         <StackPanel>
-                            <TextBlock Text="PROFIL GRY (PCSX2)" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6"/>
+                            <Grid Margin="0,0,0,6">
+                                <TextBlock Text="SZYBKI PROFIL &amp; EMULATOR" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimary}"/>
+                                <Button Name="BtnGoToEmulatorsCard" Content="Wszystkie (Tab 2) ➜" Click="BtnSwitchToEmulators_Click" Background="Transparent" BorderThickness="0" Foreground="#38BDF8" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" Cursor="Hand"/>
+                            </Grid>
+                            
+                            <TextBlock Text="Filtruj emulator:" FontSize="10" Foreground="{StaticResource TextMuted}" Margin="0,0,0,2"/>
+                            <ComboBox Name="CbQuickEmulatorFilter" Style="{StaticResource DarkComboBoxStyle}" ItemContainerStyle="{StaticResource DarkComboBoxItemStyle}" SelectionChanged="CbQuickEmulatorFilter_SelectionChanged" Margin="0,0,0,6"/>
+
+                            <TextBlock Text="Wybierz profil gry:" FontSize="10" Foreground="{StaticResource TextMuted}" Margin="0,0,0,2"/>
                             <ComboBox Name="CbProfiles" Style="{StaticResource DarkComboBoxStyle}" ItemContainerStyle="{StaticResource DarkComboBoxItemStyle}" SelectionChanged="CbProfiles_SelectionChanged" Margin="0,0,0,8"/>
-                            <TextBlock Name="TxtProfileDesc" Text="Profil Time Crisis 3 — Automatyczne przeładowanie i obsługa pedału USB." FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            <TextBlock Name="TxtProfileDesc" Text="Profil gry — Automatyczne przeładowanie i optymalne parametry pistoletu." FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
                             <Border Background="#090A0F" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8">
                                 <StackPanel>
-                                    <TextBlock Text="Konfiguracja wtyczki USB PCSX2 (GunCon 2):" FontWeight="SemiBold" FontSize="10" Foreground="{StaticResource AccentCyan}" Margin="0,0,0,4"/>
+                                    <TextBlock Name="TxtQuickMappingHeader" Text="Domyślne mapowanie pistoletu:" FontWeight="SemiBold" FontSize="10" Foreground="{StaticResource AccentCyan}" Margin="0,0,0,4"/>
                                     <Grid Margin="0,1">
-                                        <TextBlock Text="• Spust (Trigger):" FontSize="10" Foreground="{StaticResource TextMuted}"/>
-                                        <TextBlock Text="Lewy Przycisk Myszy (LMB)" FontSize="10" Foreground="#F8FAFC" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="• Spust:" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                                        <TextBlock Name="TxtQuickTrigger" Text="Lewy Przycisk (LMB)" FontSize="10" Foreground="#F8FAFC" HorizontalAlignment="Right"/>
                                     </Grid>
                                     <Grid Margin="0,1">
-                                        <TextBlock Text="• Reload / Przycisk A:" FontSize="10" Foreground="{StaticResource TextMuted}"/>
-                                        <TextBlock Text="Prawy Przycisk / Spacja" FontSize="10" Foreground="#F8FAFC" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="• Reload:" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                                        <TextBlock Name="TxtQuickReload" Text="Prawy Przycisk (RMB)" FontSize="10" Foreground="#F8FAFC" HorizontalAlignment="Right"/>
                                     </Grid>
                                     <Grid Margin="0,1">
-                                        <TextBlock Text="• Pedał / Przycisk B:" FontSize="10" Foreground="{StaticResource TextMuted}"/>
-                                        <TextBlock Text="Środkowy Przycisk Myszy" FontSize="10" Foreground="#F8FAFC" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="• Pedał USB:" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                                        <TextBlock Name="TxtQuickPedal" Text="Spacja / Środkowy" FontSize="10" Foreground="#F59E0B" HorizontalAlignment="Right"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
+
+                            <Button Name="BtnOpenFullGeneratorForGame" Content="⚡ Otwórz Generator Plików dla tej Gry" Click="BtnOpenFullGeneratorForGame_Click" Background="#4F46E5" Foreground="#FFF" FontWeight="Bold" FontSize="11" Padding="10,6" Margin="0,8,0,0" Cursor="Hand"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -1660,12 +2291,151 @@ input_remap_port_p2 = ""1""
                 </Border>
             </Grid>
         </Grid>
+            </TabItem>
+
+            <!-- ========================================================================= -->
+            <!-- TAB 2: INTEGRACJE EMULATORÓW (RetroArch, MAME, PCSX2, DemulShooter...) -->
+            <!-- ========================================================================= -->
+            <TabItem Header="🎮  INTEGRACJE EMULATORÓW (RetroArch, MAME, PCSX2, Demul...)" Style="{StaticResource ModernTabItemStyle}">
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="380"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Column: Filter and Game Catalog -->
+                    <Border Grid.Column="0" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,12,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="KATALOG EMULATORÓW I GIER" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
+                            
+                            <!-- Category Selector -->
+                            <TextBlock Grid.Row="1" Text="Wybierz platformę / emulator:" FontSize="11" Foreground="{StaticResource TextMuted}" Margin="0,0,0,4"/>
+                            <ComboBox Grid.Row="2" Name="CbEmulatorFilter" Style="{StaticResource DarkComboBoxStyle}" ItemContainerStyle="{StaticResource DarkComboBoxItemStyle}" SelectionChanged="CbEmulatorFilter_SelectionChanged" Margin="0,0,0,10"/>
+
+                            <!-- Games List -->
+                            <ListBox Grid.Row="3" Name="ListGames" SelectionChanged="ListGames_SelectionChanged" Background="#090A0F" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Foreground="#F8FAFC" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="10,8" Margin="0,2" Background="#131722" CornerRadius="6" BorderBrush="#222B3D" BorderThickness="1">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12" Foreground="#F8FAFC"/>
+                                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <Border Background="#1E293B" CornerRadius="3" Padding="5,1" Margin="0,0,6,0">
+                                                        <TextBlock Text="{Binding Emulator}" FontSize="10" Foreground="#38BDF8"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding System}" FontSize="10" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Border>
+
+                    <!-- Right Column: Config Generator Studio -->
+                    <Border Grid.Column="1" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Game Details Header -->
+                            <Grid Grid.Row="0" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Name="TxtSelectedGameName" Text="Battle Clash (Space Bazooka)" FontSize="16" FontWeight="Bold" Foreground="#38BDF8"/>
+                                        <Border Name="BadgeSelectedSystem" Background="#1E293B" CornerRadius="4" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Name="TxtSelectedSystem" Text="Super Nintendo (SNES)" FontSize="10" Foreground="#F59E0B" FontWeight="Bold"/>
+                                        </Border>
+                                        <Border Background="#064E3B" CornerRadius="4" Padding="6,2" Margin="6,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Name="TxtSelectedEmulator" Text="RetroArch (Snes9x)" FontSize="10" Foreground="#34D399"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Name="TxtSelectedGameDesc" Text="Kultowy mecha-shooter Super Scope z niszczeniem osłon i strzałami ładowanymi." FontSize="11" Foreground="{StaticResource TextMuted}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Name="BtnApplyProfileToBridge" Content="⚡ Zastosuj do Mostka" Click="BtnApplyProfileToBridge_Click" Background="#0369A1" Foreground="#FFF" FontWeight="SemiBold" FontSize="11" Padding="10,6" Margin="0,0,6,0" Cursor="Hand"/>
+                                    <Button Name="BtnCopyConfig" Content="📋 Kopiuj Plik" Click="BtnCopyConfig_Click" Background="#10B981" Foreground="#000" FontWeight="Bold" FontSize="11" Padding="10,6" Margin="0,0,6,0" Cursor="Hand"/>
+                                    <Button Name="BtnSaveConfigFile" Content="💾 Zapisz Plik..." Click="BtnSaveConfigFile_Click" Background="#334155" Foreground="#F8FAFC" FontSize="11" Padding="10,6" Margin="0,0,6,0" Cursor="Hand"/>
+                                    <Button Name="BtnOpenEmulatorFolder" Content="📁 Folder Emulatora" Click="BtnOpenEmulatorFolder_Click" Background="#1E293B" Foreground="#94A3B8" FontSize="11" Padding="10,6" Cursor="Hand"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Hardware mapping & Settings Strip -->
+                            <Border Grid.Row="1" Background="#090A0F" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="SPUST (TRIGGER)" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                                        <TextBlock Name="TxtMapTrigger" Text="Lewy Przycisk (LMB)" FontSize="11" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="PRZEŁADOWANIE (RELOAD)" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                                        <TextBlock Name="TxtMapReload" Text="Prawy Przycisk (RMB)" FontSize="11" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="PEDAŁ USB (ACTION)" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                                        <TextBlock Name="TxtMapPedal" Text="Klawisz Spacja / Middle Click" FontSize="11" FontWeight="SemiBold" Foreground="#F59E0B"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Config Format Switcher Buttons -->
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="Wybierz plik konfiguracji: " FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <Button Name="BtnFormat1" Content="snes9x.opt (Opcje Rdzenia)" Click="BtnFormat1_Click" Background="#0284C7" Foreground="#FFF" FontWeight="Bold" FontSize="11" Padding="10,4" Margin="0,0,6,0" Cursor="Hand"/>
+                                <Button Name="BtnFormat2" Content="Snes9x.rmp (Remap Wejść)" Click="BtnFormat2_Click" Background="#1E293B" Foreground="#94A3B8" FontSize="11" Padding="10,4" Margin="0,0,6,0" Cursor="Hand"/>
+                                <Button Name="BtnFormat3" Content="retroarch.cfg (RawInput)" Click="BtnFormat3_Click" Background="#1E293B" Foreground="#94A3B8" FontSize="11" Padding="10,4" Cursor="Hand"/>
+                            </StackPanel>
+
+                            <!-- Code Editor Viewer -->
+                            <Border Grid.Row="3" Background="#07090E" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="4">
+                                <TextBox Name="TxtGeneratedConfig" FontFamily="Consolas" FontSize="12" Foreground="#38BDF8" Background="Transparent" BorderThickness="0" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="NoWrap" Padding="8"/>
+                            </Border>
+
+                            <!-- Target File Path Location Guide -->
+                            <Border Grid.Row="4" Background="#0F172A" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10,6" Margin="0,8,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="📍 Gdzie wkleić ten plik: " FontWeight="SemiBold" FontSize="11" Foreground="#F59E0B"/>
+                                    <TextBlock Name="TxtFileLocationPath" Text="%APPDATA%\RetroArch\config\Snes9x\snes9x.opt" FontFamily="Consolas" FontSize="11" Foreground="#F8FAFC"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
 
         <!-- Footer Status Bar -->
         <Border Grid.Row="3" Margin="0,10,0,0">
             <Grid>
                 <TextBlock Name="TxtStatus" Text="Status: Gotowy do połączenia z G'AIM'E (2E2C:0631)" FontSize="11" Foreground="{StaticResource TextMuted}"/>
-                <TextBlock Text="G'AIM'E PC Bridge • Oparty na analizie HID digitizera mattkanwisher/gaime_mods • 100% User-Mode (HVCI safe)" FontSize="11" Foreground="#475569" HorizontalAlignment="Right"/>
+                <TextBlock Text="G'AIM'E PC Bridge • Oparty na analizie HID digitizera mattkanwisher/gaime_mods • 100% User-Mode (Win32 API)" FontSize="11" Foreground="#475569" HorizontalAlignment="Right"/>
             </Grid>
         </Border>
     </Grid>
@@ -1702,6 +2472,11 @@ public partial class MainWindow : Window
     private bool _isTriggerSimulated = false;
     private bool _isPacketLogPaused = false;
     private int _packetCounter = 0;
+
+    private List<GameProfile> _allGames = new();
+    private List<GameProfile> _displayedGames = new();
+    private GameProfile? _selectedGame;
+    private int _currentConfigFormatIndex = 0;
 
     private class ScreenInfo
     {
@@ -1740,6 +2515,7 @@ public partial class MainWindow : Window
         _hidService.ReportReceived += OnReportReceived;
         _hidService.ConnectionChanged += OnConnectionChanged;
 
+        InitEmulatorStudio();
         PopulateMonitors();
         PopulateProfiles();
         PopulatePedalKeys();
@@ -1784,14 +2560,63 @@ public partial class MainWindow : Window
         UpdateMonitorBounds();
     }
 
+    private void InitEmulatorStudio()
+    {
+        _allGames = GameProfile.GetAllProfiles();
+        
+        CbQuickEmulatorFilter.Items.Clear();
+        CbQuickEmulatorFilter.Items.Add("Wszystkie emulatory");
+        CbQuickEmulatorFilter.Items.Add("RetroArch (Snes9x, Genesis, PSX)");
+        CbQuickEmulatorFilter.Items.Add("PCSX2 (GunCon 2 USB)");
+        CbQuickEmulatorFilter.Items.Add("MAME (Arcade Lightguns)");
+        CbQuickEmulatorFilter.Items.Add("Sega Model 2 Emulator");
+        CbQuickEmulatorFilter.Items.Add("TeknoParrot / DemulShooter");
+        CbQuickEmulatorFilter.SelectedIndex = 0;
+
+        CbEmulatorFilter.Items.Clear();
+        CbEmulatorFilter.Items.Add("Wszystkie emulatory");
+        CbEmulatorFilter.Items.Add("RetroArch (Snes9x, Genesis, PSX)");
+        CbEmulatorFilter.Items.Add("PCSX2 (GunCon 2 USB)");
+        CbEmulatorFilter.Items.Add("MAME (Arcade Lightguns)");
+        CbEmulatorFilter.Items.Add("Sega Model 2 Emulator");
+        CbEmulatorFilter.Items.Add("TeknoParrot / DemulShooter");
+        CbEmulatorFilter.SelectedIndex = 0;
+
+        FilterGamesList("Wszystkie emulatory");
+    }
+
+    private void FilterGamesList(string filter)
+    {
+        if (filter.Contains("RetroArch"))
+            _displayedGames = _allGames.FindAll(g => g.Emulator.Contains("RetroArch"));
+        else if (filter.Contains("PCSX2"))
+            _displayedGames = _allGames.FindAll(g => g.Emulator.Contains("PCSX2"));
+        else if (filter.Contains("MAME"))
+            _displayedGames = _allGames.FindAll(g => g.Emulator.Contains("MAME"));
+        else if (filter.Contains("Model 2"))
+            _displayedGames = _allGames.FindAll(g => g.Emulator.Contains("Model 2"));
+        else if (filter.Contains("TeknoParrot") || filter.Contains("DemulShooter"))
+            _displayedGames = _allGames.FindAll(g => g.Emulator.Contains("TeknoParrot") || g.Emulator.Contains("DemulShooter"));
+        else
+            _displayedGames = new List<GameProfile>(_allGames);
+
+        ListGames.ItemsSource = null;
+        ListGames.ItemsSource = _displayedGames;
+        if (_displayedGames.Count > 0)
+        {
+            ListGames.SelectedIndex = 0;
+        }
+    }
+
     private void PopulateProfiles()
     {
-        CbProfiles.Items.Add("Time Crisis 3 (PCSX2 GunCon 2)");
-        CbProfiles.Items.Add("Time Crisis 2 (PCSX2 Co-op)");
-        CbProfiles.Items.Add("Vampire Night (PCSX2 Szybki Ogień)");
-        CbProfiles.Items.Add("Point Blank / Gunvari (Precyzja Pikselowa)");
-        CbProfiles.Items.Add("Dino Stalker / Gun Survivor");
-        CbProfiles.SelectedIndex = 0;
+        CbProfiles.Items.Clear();
+        var list = _allGames.Count > 0 ? _allGames : GameProfile.GetAllProfiles();
+        foreach (var g in list)
+        {
+            CbProfiles.Items.Add($"{g.Name} ({g.Emulator})");
+        }
+        if (CbProfiles.Items.Count > 0) CbProfiles.SelectedIndex = 0;
     }
 
     private void PopulatePedalKeys()
@@ -1836,7 +2661,7 @@ public partial class MainWindow : Window
         var (filtered, rejected) = _filter.Process(rawX, rawY);
         Point screenPt = PerspectiveTransform.Transform(filtered, _calibration.HomographyMatrix, _targetMonitorBounds);
 
-        // Inject SendInput to Windows (User-Mode, HVCI safe)
+        // Inject SendInput to Windows (User-Mode Win32 API)
         WindowsMouseOutput.SendAbsolutePosition(screenPt, _targetMonitorBounds);
         WindowsMouseOutput.SendButtons(trigger, false, _isPedalPressed);
 
@@ -2044,34 +2869,309 @@ public partial class MainWindow : Window
     private void CbProfiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (TxtProfileDesc == null) return;
-
-        switch (CbProfiles.SelectedIndex)
+        int idx = CbProfiles.SelectedIndex;
+        if (idx >= 0 && idx < _allGames.Count)
         {
-            case 0:
-                TxtProfileDesc.Text = "Profil Time Crisis 3 — Automatyczne przeładowanie i obsługa pedału USB.";
-                SliderFilter.Value = 0.35;
-                SliderDeadband.Value = 4;
-                break;
-            case 1:
-                TxtProfileDesc.Text = "Profil Time Crisis 2 — Tryb Co-op dla 2 graczy z synchronizacją portów.";
-                SliderFilter.Value = 0.35;
-                SliderDeadband.Value = 4;
-                break;
-            case 2:
-                TxtProfileDesc.Text = "Profil Vampire Night — Czułość zoptymalizowana pod szybkie strzelanie bez opóźnień.";
-                SliderFilter.Value = 0.15;
-                SliderDeadband.Value = 2;
-                break;
-            case 3:
-                TxtProfileDesc.Text = "Profil Point Blank / Gunvari — Maksymalna precyzja pikselowa z mocniejszym filtrem.";
-                SliderFilter.Value = 0.60;
-                SliderDeadband.Value = 6;
-                break;
-            case 4:
-                TxtProfileDesc.Text = "Profil Dino Stalker — Płynny ruch kamery z deadbandem redukującym mikrodrgania.";
-                SliderFilter.Value = 0.45;
-                SliderDeadband.Value = 5;
-                break;
+            var gp = _allGames[idx];
+            TxtProfileDesc.Text = $"{gp.Name} — {gp.Description}";
+            SliderFilter.Value = gp.RecommendedFilterStability;
+            SliderDeadband.Value = gp.Deadzone;
+            if (TxtQuickTrigger != null) TxtQuickTrigger.Text = gp.TriggerMapping;
+            if (TxtQuickReload != null) TxtQuickReload.Text = gp.ReloadMapping;
+            if (TxtQuickPedal != null) TxtQuickPedal.Text = $"{gp.PedalAction} ({gp.PedalMapping})";
+        }
+        else
+        {
+            TxtProfileDesc.Text = "Profil gry — Automatyczne przeładowanie i obsługa pedału USB.";
+        }
+    }
+
+    private void BtnSwitchToEmulators_Click(object sender, RoutedEventArgs e)
+    {
+        MainTabControl.SelectedIndex = 1;
+    }
+
+    private void CbQuickEmulatorFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CbQuickEmulatorFilter.SelectedItem is string sel)
+        {
+            CbProfiles.Items.Clear();
+            var matches = sel.Contains("Wszystkie") 
+                ? _allGames 
+                : _allGames.FindAll(g => g.Emulator.ToLower().Contains(sel.Split(' ')[0].ToLower()));
+            if (matches.Count == 0) matches = _allGames;
+            foreach (var g in matches)
+            {
+                CbProfiles.Items.Add($"{g.Name} ({g.Emulator})");
+            }
+            if (CbProfiles.Items.Count > 0) CbProfiles.SelectedIndex = 0;
+        }
+    }
+
+    private void CbEmulatorFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CbEmulatorFilter.SelectedItem is string sel)
+        {
+            FilterGamesList(sel);
+        }
+    }
+
+    private void ListGames_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ListGames.SelectedItem is GameProfile gp)
+        {
+            _selectedGame = gp;
+            TxtSelectedGameName.Text = gp.Name;
+            TxtSelectedSystem.Text = gp.System;
+            TxtSelectedEmulator.Text = gp.Emulator;
+            TxtSelectedGameDesc.Text = gp.Description;
+            TxtMapTrigger.Text = gp.TriggerMapping;
+            TxtMapReload.Text = gp.ReloadMapping;
+            TxtMapPedal.Text = $"{gp.PedalAction} ({gp.PedalMapping})";
+
+            UpdateFormatButtons(gp);
+            UpdateConfigView();
+        }
+    }
+
+    private void UpdateFormatButtons(GameProfile gp)
+    {
+        if (gp.Emulator.Contains("RetroArch"))
+        {
+            BtnFormat1.Content = gp.System.Contains("SNES") ? "snes9x.opt (Opcje Rdzenia)" : "core_options.opt";
+            BtnFormat2.Content = "Remap Wejść (.rmp)";
+            BtnFormat3.Content = "retroarch.cfg (RawInput)";
+            BtnFormat3.Visibility = Visibility.Visible;
+        }
+        else if (gp.Emulator.Contains("MAME"))
+        {
+            BtnFormat1.Content = $"{gp.RomName}.cfg (Mapowanie)";
+            BtnFormat2.Content = "mame.ini (RawInput)";
+            BtnFormat3.Content = "default.cfg (Global)";
+            BtnFormat3.Visibility = Visibility.Visible;
+        }
+        else if (gp.Emulator.Contains("Model 2"))
+        {
+            BtnFormat1.Content = "EMULATOR.INI";
+            BtnFormat2.Content = "DemulShooter.bat";
+            BtnFormat3.Visibility = Visibility.Collapsed;
+        }
+        else if (gp.Emulator.Contains("PCSX2"))
+        {
+            BtnFormat1.Content = "PCSX2_GunCon2.ini";
+            BtnFormat2.Content = "SendInput_Bridge.cfg";
+            BtnFormat3.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            BtnFormat1.Content = $"{gp.RomName}.xml (TeknoParrot)";
+            BtnFormat2.Content = "DemulShooter.ini";
+            BtnFormat3.Content = "launch.bat";
+            BtnFormat3.Visibility = Visibility.Visible;
+        }
+    }
+
+    private void BtnFormat1_Click(object sender, RoutedEventArgs e)
+    {
+        _currentConfigFormatIndex = 0;
+        HighlightFormatButton(BtnFormat1);
+        UpdateConfigView();
+    }
+
+    private void BtnFormat2_Click(object sender, RoutedEventArgs e)
+    {
+        _currentConfigFormatIndex = 1;
+        HighlightFormatButton(BtnFormat2);
+        UpdateConfigView();
+    }
+
+    private void BtnFormat3_Click(object sender, RoutedEventArgs e)
+    {
+        _currentConfigFormatIndex = 2;
+        HighlightFormatButton(BtnFormat3);
+        UpdateConfigView();
+    }
+
+    private void HighlightFormatButton(Button activeBtn)
+    {
+        BtnFormat1.Background = new SolidColorBrush(Color.FromRgb(30, 41, 59));
+        BtnFormat1.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184));
+        BtnFormat2.Background = new SolidColorBrush(Color.FromRgb(30, 41, 59));
+        BtnFormat2.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184));
+        BtnFormat3.Background = new SolidColorBrush(Color.FromRgb(30, 41, 59));
+        BtnFormat3.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184));
+
+        activeBtn.Background = new SolidColorBrush(Color.FromRgb(2, 132, 199));
+        activeBtn.Foreground = new SolidColorBrush(Colors.White);
+    }
+
+    private void UpdateConfigView()
+    {
+        if (_selectedGame == null) return;
+        var gp = _selectedGame;
+        int screenW = (int)(_targetMonitorBounds.Width > 0 ? _targetMonitorBounds.Width : 1920);
+        int screenH = (int)(_targetMonitorBounds.Height > 0 ? _targetMonitorBounds.Height : 1080);
+
+        if (gp.Emulator.Contains("RetroArch"))
+        {
+            if (_currentConfigFormatIndex == 0)
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateRetroArchSnes9xOpt(gp.Name, gp.IsJustifier);
+                TxtFileLocationPath.Text = @"%APPDATA%\RetroArch\config\Snes9x\snes9x.opt (lub katalog /config/Snes9x)";
+            }
+            else if (_currentConfigFormatIndex == 1)
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateRetroArchRemap(gp.Name, gp.IsJustifier);
+                TxtFileLocationPath.Text = @"%APPDATA%\RetroArch\config\remaps\Snes9x\Snes9x.rmp";
+            }
+            else
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateRetroArchCfg(screenW, screenH);
+                TxtFileLocationPath.Text = @"%APPDATA%\RetroArch\retroarch.cfg";
+            }
+        }
+        else if (gp.Emulator.Contains("MAME"))
+        {
+            if (_currentConfigFormatIndex == 0)
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateMameGameCfg(gp.RomName, gp.Name);
+                TxtFileLocationPath.Text = $@"C:\MAME\cfg\{gp.RomName}.cfg";
+            }
+            else if (_currentConfigFormatIndex == 1)
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateMameIni(gp.RomName);
+                TxtFileLocationPath.Text = @"C:\MAME\mame.ini";
+            }
+            else
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateMameDefaultConfig();
+                TxtFileLocationPath.Text = @"C:\MAME\cfg\default.cfg";
+            }
+        }
+        else if (gp.Emulator.Contains("Model 2"))
+        {
+            if (_currentConfigFormatIndex == 0)
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateModel2Ini(gp.RomName);
+                TxtFileLocationPath.Text = @"C:\Model2Emulator\EMULATOR.INI";
+            }
+            else
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateDemulShooterBat(gp.RomName, "model2");
+                TxtFileLocationPath.Text = @"C:\DemulShooter\launch_model2.bat";
+            }
+        }
+        else if (gp.Emulator.Contains("PCSX2"))
+        {
+            TxtGeneratedConfig.Text = EmulatorConfigGenerator.GeneratePcsx2Snippet(gp.Name);
+            TxtFileLocationPath.Text = @"%USERPROFILE%\Documents\PCSX2\inis\PCSX2_ui.ini (sekcja [USB])";
+        }
+        else
+        {
+            if (_currentConfigFormatIndex == 0)
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateTeknoParrotConfig(gp.Name, gp.RomName);
+                TxtFileLocationPath.Text = $@"C:\TeknoParrot\UserProfiles\{gp.RomName}.xml";
+            }
+            else if (_currentConfigFormatIndex == 1)
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateDemulShooterIni(
+                    gp.Name,
+                    gp.RomName,
+                    gp.Emulator,
+                    _calibration,
+                    null,
+                    screenW,
+                    screenH,
+                    (int)gp.Deadzone,
+                    gp.SensitivityMultiplier);
+                TxtFileLocationPath.Text = @"C:\DemulShooter\DemulShooter.ini";
+            }
+            else
+            {
+                TxtGeneratedConfig.Text = EmulatorConfigGenerator.GenerateDemulShooterBat(gp.RomName, "snes");
+                TxtFileLocationPath.Text = @"C:\DemulShooter\run_game.bat";
+            }
+        }
+    }
+
+    private void BtnApplyProfileToBridge_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+        SliderFilter.Value = _selectedGame.RecommendedFilterStability;
+        SliderDeadband.Value = _selectedGame.Deadzone;
+        TxtStatus.Text = $"Zastosowano optymalne parametry dla: {_selectedGame.Name} (Filter: {(int)(_selectedGame.RecommendedFilterStability * 100)}%, Deadzone: {_selectedGame.Deadzone}px)";
+        string msg = "Załadowano profil: " + _selectedGame.Name + "\\n\\n"
+            + "• Filtr jitteru: " + (int)(_selectedGame.RecommendedFilterStability * 100) + "%\\n"
+            + "• Deadzone: " + _selectedGame.Deadzone + " px\\n"
+            + "• Pedał: " + _selectedGame.PedalAction + "\\n\\n"
+            + "Mostek HID działa z tymi parametrami.";
+        MessageBox.Show(msg, "Profil Aktywowany", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void BtnCopyConfig_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Clipboard.SetText(TxtGeneratedConfig.Text);
+            BtnCopyConfig.Content = "✓ Skopiowano!";
+            var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            timer.Tick += (s, ev) =>
+            {
+                BtnCopyConfig.Content = "📋 Kopiuj Plik";
+                timer.Stop();
+            };
+            timer.Start();
+        }
+        catch { }
+    }
+
+    private void BtnSaveConfigFile_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var sfd = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = _selectedGame != null ? $"{_selectedGame.RomName}_config.txt" : "emulator_config.txt",
+                Filter = "Pliki konfiguracji (*.cfg;*.opt;*.ini;*.rmp;*.xml;*.bat)|*.cfg;*.opt;*.ini;*.rmp;*.xml;*.bat|Wszystkie pliki (*.*)|*.*"
+            };
+            if (sfd.ShowDialog() == true)
+            {
+                System.IO.File.WriteAllText(sfd.FileName, TxtGeneratedConfig.Text);
+                MessageBox.Show("Zapisano pomyślnie plik konfiguracji:\\n" + sfd.FileName, "Zapisano Plik", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Błąd zapisu pliku: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnOpenEmulatorFolder_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string raPath = System.IO.Path.Combine(appData, "RetroArch");
+            if (System.IO.Directory.Exists(raPath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", raPath);
+            }
+            else
+            {
+                System.Diagnostics.Process.Start("explorer.exe", appData);
+            }
+        }
+        catch { }
+    }
+
+    private void BtnOpenFullGeneratorForGame_Click(object sender, RoutedEventArgs e)
+    {
+        MainTabControl.SelectedIndex = 1;
+        int selIdx = CbProfiles.SelectedIndex;
+        if (selIdx >= 0 && selIdx < _allGames.Count)
+        {
+            ListGames.SelectedItem = _allGames[selIdx];
         }
     }
 
@@ -2737,16 +3837,15 @@ public partial class CalibrationWindow : Window
     path: 'Publish_Standalone_Win11.bat',
     name: 'Publish_Standalone_Win11.bat',
     category: 'Project',
-    description: 'Skrypt 1-kliknięciem tworzący pojedynczy plik GaimePcBridge.exe z certyfikatem i zgodnością z Izolacją Rdzenia Windows 11',
+    description: 'Skrypt 1-kliknięciem tworzący pojedynczy plik GaimePcBridge.exe dla Windows 11',
     content: `@echo off
 chcp 65001 >nul
-title G'AIM'E PC Bridge - Kompilator Samodzielnego EXE dla Windows 11 (Zgodny z Izolacją Rdzenia)
+title G'AIM'E PC Bridge - Kompilator Samodzielnego EXE dla Windows 11
 color 0b
 
 echo =======================================================================
 echo    G'AIM'E PC BRIDGE - GENERATOR SAMODZIELNEJ APLIKACJI (.EXE)
-echo    ZGODNY Z IZOLACJĄ RDZENIA (CORE ISOLATION / MEMORY INTEGRITY)
-echo    Dla systemu Windows 11 (64-bit, Standalone, Self-Contained)
+echo    Dla systemu Windows 11 / 10 (64-bit, Standalone, Self-Contained)
 echo =======================================================================
 echo.
 
@@ -2760,13 +3859,11 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo [KROK 1/3] Kompilacja pojedynczego pliku EXE...
+echo Kompilacja pojedynczego pliku EXE (Self-Contained Single-File)...
 echo  - Tryb: Release ^| Architektura: win-x64 ^| Self-Contained: TAK
-echo  - Sprzętowa ochrona stosu (CET / Shadow Stacks): WŁĄCZONA (CETCompat=true)
-echo  - 64-bitowe ASLR: WŁĄCZONE (HighEntropyVA=true)
 echo.
 
-dotnet publish GaimePcBridge\\GaimePcBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:PublishReadyToRun=true -p:CETCompat=true -p:HighEntropyVA=true -o .\\Publish_Win11
+dotnet publish GaimePcBridge\\GaimePcBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o .\\Publish_Win11
 
 if %errorlevel% neq 0 (
     echo.
@@ -2776,25 +3873,8 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [KROK 2/3] Konfiguracja zabezpieczeń Windows 11 (Izolacja Rdzenia / SmartScreen)...
-echo  - Usuwanie blokady strefy sieciowej (Zone.Identifier)...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Unblock-File -Path '.\\Publish_Win11\\GaimePcBridge.exe' -ErrorAction SilentlyContinue"
-
-echo  - Generowanie lokalnego certyfikatu deweloperskiego i cyfrowe podpisywanie Authenticode...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$cert = Get-ChildItem Cert:\\CurrentUser\\My -CodeSigningCert | Select-Object -First 1; if (-not $cert) { $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=GAIME-PC-Bridge-Local-Dev' -CertStoreLocation Cert:\\CurrentUser\\My -NotAfter (Get-Date).AddYears(5); $rootStore = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser'); $rootStore.Open('ReadWrite'); $rootStore.Add($cert); $rootStore.Close(); }; Set-AuthenticodeSignature -FilePath '.\\Publish_Win11\\GaimePcBridge.exe' -Certificate $cert -HashAlgorithm SHA256 | Out-Null; $sig = Get-AuthenticodeSignature -FilePath '.\\Publish_Win11\\GaimePcBridge.exe'; Write-Host ('   Podpis cyfrowy Authenticode: ' + $sig.Status)"
-
-echo.
-echo [KROK 3/3] Weryfikacja zgodności z Izolacją Rdzenia:
-echo  [OK] Tryb działania: 100%% User-Mode (Win32 HID subsystem).
-echo  [OK] Brak jakichkolwiek sterowników jądra (.sys).
-echo  [OK] Ochrona stosu CETCompat: TAK.
-echo  [OK] Podpis Authenticode: TAK.
-echo.
 echo =======================================================================
 echo  [SUKCES!] Utworzono aplikację: .\\Publish_Win11\\GaimePcBridge.exe
-echo.
-echo  Plik NIE jest blokowany przez Izolację Rdzenia (Memory Integrity),
-echo  ani przez funkcję Blokowania Naruszonych Sterowników Windows 11!
 echo =======================================================================
 echo.
 set /p RUNNOW="Czy chcesz uruchomić GaimePcBridge.exe teraz? (T/N): "
@@ -2804,54 +3884,6 @@ if /i "%RUNNOW%"=="T" (
 
 echo.
 pause`,
-  },
-  {
-    path: 'Podpisz_Certyfikatem_Lokalnym.ps1',
-    name: 'Podpisz_Certyfikatem_Lokalnym.ps1',
-    category: 'Project',
-    description: 'Skrypt PowerShell podpisujący plik EXE lokalnym certyfikatem Authenticode (zapobiega blokadom SmartScreen i Izolacji Rdzenia)',
-    content: `# Skrypt podpisywania GaimePcBridge.exe lokalnym certyfikatem zaufanym
-# Rozwiązuje problem blokowania przez Windows Defender SmartScreen i Izolację Rdzenia
-
-$exePath = Join-Path $PSScriptRoot "Publish_Win11\GaimePcBridge.exe"
-
-if (-not (Test-Path $exePath)) {
-    Write-Host "[BŁĄD] Nie znaleziono pliku: $exePath" -ForegroundColor Red
-    Write-Host "Najpierw uruchom Publish_Standalone_Win11.bat, aby skompilować aplikację." -ForegroundColor Yellow
-    exit 1
-}
-
-Write-Host "=== Podpisywanie G'AIM'E PC Bridge dla Windows 11 ===" -ForegroundColor Cyan
-
-# 1. Odblokuj plik pobrany z sieci
-Unblock-File -Path $exePath -ErrorAction SilentlyContinue
-Write-Host "[1/3] Usunięto flagę pobrania z sieci (Mark of the Web / Zone.Identifier)" -ForegroundColor Green
-
-# 2. Utwórz lub pobierz certyfikat podpisywania kodu
-$certSubject = "CN=GAIME-PC-Bridge-Local-Dev"
-$cert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Where-Object { $_.Subject -match "GAIME" } | Select-Object -First 1
-
-if (-not $cert) {
-    Write-Host "[2/3] Tworzenie lokalnego certyfikatu deweloperskiego..." -ForegroundColor Yellow
-    $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject $certSubject -CertStoreLocation Cert:\\CurrentUser\\My -NotAfter (Get-Date).AddYears(5)
-
-    # Dodaj do zaufanych głównych urzędów certyfikacji bieżącego użytkownika
-    $rootStore = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "CurrentUser")
-    $rootStore.Open("ReadWrite")
-    $rootStore.Add($cert)
-    $rootStore.Close()
-    Write-Host "      Dodano certyfikat do Zaufanych Głównych Urzędów Certyfikacji użytkownika." -ForegroundColor Green
-} else {
-    Write-Host "[2/3] Użyto istniejącego lokalnego certyfikatu deweloperskiego." -ForegroundColor Green
-}
-
-# 3. Podpisz plik binarny algorytmem SHA-256
-$sigResult = Set-AuthenticodeSignature -FilePath $exePath -Certificate $cert -HashAlgorithm SHA256
-Write-Host "[3/3] Podpisano Authenticode SHA256: Status = $($sigResult.Status)" -ForegroundColor Green
-
-Write-Host ""
-Write-Host "[SUKCES] GaimePcBridge.exe jest teraz podpisany i w pełni zaufany w systemie Windows 11!" -ForegroundColor Cyan
-Write-Host "Izolacja Rdzenia (Memory Integrity) oraz SmartScreen nie będą blokować uruchomienia." -ForegroundColor Cyan`,
   },
   {
     path: 'Uruchom_Aplikacje_Win11.bat',
@@ -2875,7 +3907,7 @@ dotnet run --project GaimePcBridge\\GaimePcBridge.csproj -c Release`,
     path: 'GaimePcBridge/Properties/PublishProfiles/win11-x64-standalone.pubxml',
     name: 'win11-x64-standalone.pubxml',
     category: 'Project',
-    description: 'Profil publikacji Visual Studio 2022 (Single-File Standalone win-x64, Core Isolation & CET Compliant)',
+    description: 'Profil publikacji Visual Studio 2022 (Single-File Standalone win-x64)',
     content: `<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
@@ -2891,7 +3923,6 @@ dotnet run --project GaimePcBridge\\GaimePcBridge.csproj -c Release`,
     <PublishReadyToRun>true</PublishReadyToRun>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <CETCompat>true</CETCompat>
     <HighEntropyVA>true</HighEntropyVA>
   </PropertyGroup>
 </Project>`,
@@ -2900,39 +3931,16 @@ dotnet run --project GaimePcBridge\\GaimePcBridge.csproj -c Release`,
     path: 'README.md',
     name: 'README.md',
     category: 'Docs',
-    description: 'Kompletna instrukcja uruchomienia, kompilacji, zgodności z Izolacją Rdzenia i PCSX2',
-    content: `# G'AIM'E PC Bridge — Samodzielna Aplikacja Windows 11 (Zgodna z Izolacją Rdzenia)
+    description: 'Kompletna instrukcja uruchomienia, kompilacji i konfiguracji emulatorów',
+    content: `# G'AIM'E PC Bridge — Samodzielna Aplikacja Windows 11
 
-Samodzielna aplikacja pulpitu Windows 11 dla pistoletu arcade **G'AIM'E** (USB VID \`0x2E2C\`, PID \`0x0631\`) z 4-punktową kalibracją perspektywiczną, dynamicznym filtrem skoków optycznych i natywną obsługą emulatora **PCSX2 (GunCon 2)**.
+Samodzielna aplikacja pulpitu Windows 11 dla pistoletu arcade **G'AIM'E** (USB VID \`0x2E2C\`, PID \`0x0631\`) z 4-punktową kalibracją perspektywiczną, dynamicznym filtrem skoków optycznych i natywną obsługą emulatorów (**PCSX2 GunCon 2**, **MAME**, **Sega Model 2**, **TeknoParrot**).
 
-Aplikacja jest w 100% **samodzielna (Self-Contained Single-File)** oraz **w pełni zgodna z funkcją Izolacji Rdzenia (Core Isolation / Integralność Pamięci / HVCI)** w systemie Windows 11!
-
----
-
-## 🛡️ Dlaczego Izolacja Rdzenia (Core Isolation) NIE Blokuje tej Aplikacji?
-
-Wielu użytkowników lightgunów na Windows 11 spotyka się z blokadami systemowymi:
-> *"Sterownik nie może zostać załadowany na tym urządzeniu"* lub *"Izolacja rdzenia uniemożliwiła załadowanie sterownika"*.
-
-Wynika to z faktu, że starsze narzędzia próbują instalować niepodpisane sterowniki jądra (np. stare wersje vJoy, vMulti, WinRing0, InpOut32), które znajdują się na oficjalnej czarnej liście Microsoftu (**Microsoft Vulnerable Driver Blocklist**).
-
-**G'AIM'E PC Bridge rozwiązuje ten problem całkowicie na poziomie architektury:**
-1. **100% User-Mode (Czysty Tryb Użytkownika)**:
-   - Aplikacja **NIE instaluje żadnego sterownika jądra (\`.sys\`)**.
-   - Do komunikacji z pistoletem wykorzystuje standardowy podsystem Windows: \`hid.dll\` i \`setupapi.dll\`.
-   - Do sterowania celownikiem używa standardowego Win32 API \`user32.dll!SendInput\`.
-2. **Sprzętowa ochrona stosu (CET / Shadow Stacks)**:
-   - Skompilowana z flagą \`<CETCompat>true</CETCompat>\` (Control-flow Enforcement Technology), wymaganą przez zaawansowaną ochronę Windows 11.
-3. **64-bitowy ASLR (HighEntropyVA)**:
-   - Pełna losowość przestrzeni adresowej pamięci.
-4. **Manifest \`asInvoker\` i \`SegmentHeap\`**:
-   - Aplikacja nie żąda uprawnień administratorskich do wstrzykiwania kodu, dzięki czemu Windows Defender Exploit Protection nie traktuje jej jako podejrzanej.
-5. **Automatyczny podpis Authenticode**:
-   - Skrypt \`Publish_Standalone_Win11.bat\` oraz \`Podpisz_Certyfikatem_Lokalnym.ps1\` automatycznie sygnują plik EXE lokalnym zaufanym certyfikatem SHA-256 i usuwają flagę pobrania z sieci (\`Zone.Identifier\`).
+Aplikacja jest w 100% **samodzielna (Self-Contained Single-File)** — generuje pojedynczy plik \`GaimePcBridge.exe\` działający na każdym PC z Windows 11 bez konieczności instalowania środowiska .NET Runtime.
 
 ---
 
-## ⚡ Szybki Start na Windows 11 (2 Sposoby)
+## ⚡ Szybki Start na Windows 11 (3 Sposoby)
 
 ### Sposób 1: Automatyczny skrypt (Najszybszy — 1 kliknięcie)
 1. Wypakuj pobraną paczkę ZIP na dysku.
@@ -2945,18 +3953,13 @@ Wynika to z faktu, że starsze narzędzia próbują instalować niepodpisane ste
    \`\`\`cmd
    .\\Publish_Win11\\GaimePcBridge.exe
    \`\`\`
-5. Działa bez problemu przy włączonej **Izolacji rdzenia** i **Integralności pamięci**!
 
 ---
 
 ### Sposób 2: Wiersz poleceń (PowerShell / CMD)
 W folderze projektu wykonaj polecenie:
 \`\`\`powershell
-dotnet publish GaimePcBridge\\GaimePcBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:CETCompat=true -p:HighEntropyVA=true -o .\\Publish_Win11
-\`\`\`
-Następnie podpisz plik poleceniem:
-\`\`\`powershell
-powershell -ExecutionPolicy Bypass -File .\\Podpisz_Certyfikatem_Lokalnym.ps1
+dotnet publish GaimePcBridge\\GaimePcBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o .\\Publish_Win11
 \`\`\`
 
 ---
@@ -2980,9 +3983,9 @@ powershell -ExecutionPolicy Bypass -File .\\Podpisz_Certyfikatem_Lokalnym.ps1
    - Płynny suwak: **Responsywność (Zero-Lag)** kontra **Stabilność (Anti-Shake)**.
 3. **Ekran Kalibracji 4 Punktów**:
    - Pełna homografia perspektywiczna (3×3 Projective Transform) usuwająca zniekształcenia kątowe i błędy montażowe.
-4. **Bezpieczne Wyjście do Windows & PCSX2**:
+4. **Bezpieczne Wyjście do Windows & Emulatorów**:
    - Standardowe, stabilne API \`SendInput\` (współrzędne absolutne pulpitu \`MOUSEEVENTF_ABSOLUTE\`).
-   - Brak sterowników jądra = pełna kompatybilność z Windows 11 Core Isolation.
+   - Bezpieczne działanie w standardowym trybie użytkownika (User-Mode Win32).
 5. **Architektura P1 / P2 & Pedał USB**:
    - Przygotowane pod dwa niezależne strumienie pistoletów.
    - Obsługa nożnego pedału USB do krycia się i przeładowywania w grach takich jak **Time Crisis II / 3**.
@@ -3011,26 +4014,27 @@ powershell -ExecutionPolicy Bypass -File .\\Podpisz_Certyfikatem_Lokalnym.ps1
 
 \`\`\`
 GaimePcBridge/
-├── Publish_Standalone_Win11.bat      # Skrypt 1-klik tworzący i podpisujący GaimePcBridge.exe
-├── Podpisz_Certyfikatem_Lokalnym.ps1 # Skrypt PowerShell dodający zaufany podpis Authenticode
+├── Publish_Standalone_Win11.bat      # Skrypt 1-klik tworzący GaimePcBridge.exe
 ├── Uruchom_Aplikacje_Win11.bat        # Skrypt uruchamiający aplikację
 ├── GaimePcBridge/
 │   ├── app.manifest                  # Manifest zgodności z Windows 11 i User-Mode (asInvoker)
 │   ├── Properties/PublishProfiles/
-│   │   └── win11-x64-standalone.pubxml # Profil publikacji VS 2022 z CETCompat
+│   │   └── win11-x64-standalone.pubxml # Profil publikacji VS 2022
 │   ├── Models/
 │   │   ├── GunState.cs               # Stan sprzętowy i surowe pakiety HID
 │   │   ├── CalibrationData.cs        # Punkty kalibracji i macierz homografii
-│   │   └── FilterConfig.cs           # Nastawy filtra i responsywności
+│   │   ├── FilterConfig.cs           # Nastawy filtra i responsywności
+│   │   └── GameProfile.cs            # Profile gier z rekomendowanymi nastawami
 │   ├── Services/
 │   │   ├── GaimeHidService.cs        # Komunikacja USB HID dla VID 2E2C / PID 0631 (hid.dll)
 │   │   ├── JitterFilter.cs           # Filtr medianowy i detektor skoków
 │   │   ├── PerspectiveTransform.cs   # Obliczanie macierzy homografii 3x3
 │   │   ├── WindowsMouseOutput.cs     # Emulacja SendInput (Mouse Absolute)
-│   │   └── PedalService.cs           # Obsługa pedału nożnego
+│   │   ├── PedalService.cs           # Obsługa pedału nożnego
+│   │   └── EmulatorConfigGenerator.cs# Generator konfiguracji emulatorów
 │   ├── MainWindow.xaml / .cs         # Główne okno telemetryczne i sterujące
 │   ├── CalibrationWindow.xaml        # Pełnoekranowy celownik kalibracji
-│   └── GaimePcBridge.csproj          # Definicja projektu .NET 8 Standalone (CETCompat)
+│   └── GaimePcBridge.csproj          # Definicja projektu .NET 8 Standalone
 └── README.md
 \`\`\`
 `,

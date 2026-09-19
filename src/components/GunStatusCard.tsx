@@ -1,6 +1,7 @@
 import React from 'react';
 import { Monitor, Cpu, Activity, Zap, Radio, Footprints } from 'lucide-react';
 import { GunState, MonitorProfile } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface GunStatusCardProps {
   gunState: GunState;
@@ -19,6 +20,8 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
   onTogglePedal,
   onTriggerPull,
 }) => {
+  const { t, language } = useLanguage();
+
   return (
     <div className="bg-neutral-900/90 border border-neutral-800 rounded-xl p-4 lg:p-5 flex flex-col gap-4">
       {/* Header Info */}
@@ -32,10 +35,20 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
               <h3 className="font-['Chakra_Petch'] font-bold text-sm tracking-wide text-neutral-200">
                 G'AIM'E LIGHTGUN ({gunState.id})
               </h3>
-              <span className={`w-2 h-2 rounded-full ${gunState.connected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  gunState.connected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                }`}
+              />
             </div>
             <p className="text-xs text-neutral-400">
-              {gunState.isSimulated ? 'Tryb Symulacji / Gotowy do podłączenia USB' : 'Prawdziwe urządzenie WebHID aktywne'}
+              {gunState.isSimulated
+                ? (language === 'pl'
+                    ? 'Tryb Symulacji / Gotowy do podłączenia USB'
+                    : 'Simulation Mode / Ready for USB connection')
+                : (language === 'pl'
+                    ? 'Prawdziwe urządzenie WebHID aktywne'
+                    : 'Real WebHID device connected')}
             </p>
           </div>
         </div>
@@ -43,7 +56,11 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
         {/* Polling Rate Badge */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-neutral-950 border border-neutral-800 text-xs font-mono text-cyan-300">
           <Activity className="w-3.5 h-3.5 text-cyan-400" />
-          <span>{gunState.reportsPerSecond > 0 ? `${gunState.reportsPerSecond} Hz` : '125 Hz (szac.)'}</span>
+          <span>
+            {gunState.reportsPerSecond > 0
+              ? `${gunState.reportsPerSecond} Hz`
+              : (language === 'pl' ? '125 Hz (szac.)' : '125 Hz (est.)')}
+          </span>
         </div>
       </div>
 
@@ -51,7 +68,7 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="bg-neutral-950 rounded-lg p-3 border border-neutral-800/80">
           <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider block mb-1">
-            Pozycja Raw (0-10000)
+            {t.rawCoordsLabel}
           </span>
           <div className="font-mono text-sm sm:text-base font-bold text-amber-300">
             X: {gunState.rawX.toString().padStart(4, '0')}
@@ -59,13 +76,13 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
             Y: {gunState.rawY.toString().padStart(4, '0')}
           </div>
           <span className="text-[10px] text-neutral-400 mt-1 block">
-            Praktyczny zakres: 99–9900
+            {language === 'pl' ? 'Praktyczny zakres: 99–9900' : 'Practical range: 99–9900'}
           </span>
         </div>
 
         <div className="bg-neutral-950 rounded-lg p-3 border border-neutral-800/80">
           <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider block mb-1">
-            Skorygowane (Pulpit)
+            {t.screenMappingLabel}
           </span>
           <div className="font-mono text-sm sm:text-base font-bold text-cyan-300">
             X: {Math.round(gunState.screenX).toString().padStart(4, ' ')}
@@ -79,7 +96,7 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
 
         <div className="col-span-2 sm:col-span-1 bg-neutral-950 rounded-lg p-3 border border-neutral-800/80">
           <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider block mb-1">
-            Znormalizowane (0.0 - 1.0)
+            {language === 'pl' ? 'Znormalizowane (0.0 - 1.0)' : 'Normalized (0.0 - 1.0)'}
           </span>
           <div className="font-mono text-sm sm:text-base font-bold text-neutral-300">
             U: {gunState.normalizedX.toFixed(3)}
@@ -87,16 +104,19 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
             V: {gunState.normalizedY.toFixed(3)}
           </div>
           <span className="text-[10px] text-neutral-400 mt-1 block">
-            Homografia perspektywiczna
+            {language === 'pl' ? 'Homografia perspektywiczna' : 'Perspective Homography'}
           </span>
         </div>
       </div>
 
       {/* Target Monitor Selection */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-1">
-        <label htmlFor="monitor-select" className="text-xs font-medium text-neutral-300 flex items-center gap-1.5">
+        <label
+          htmlFor="monitor-select"
+          className="text-xs font-medium text-neutral-300 flex items-center gap-1.5"
+        >
           <Monitor className="w-3.5 h-3.5 text-neutral-400" />
-          Docelowy monitor (rozdzielczość gry / PCSX2):
+          {t.targetDisplayLabel}
         </label>
         <select
           id="monitor-select"
@@ -108,7 +128,11 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
           className="bg-neutral-900 border border-neutral-700 text-xs text-neutral-100 font-medium rounded-lg px-3 py-1.5 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none w-full sm:w-auto cursor-pointer"
         >
           {monitors.map((m) => (
-            <option key={m.id} value={m.id} className="bg-neutral-900 text-neutral-100 font-medium py-1">
+            <option
+              key={m.id}
+              value={m.id}
+              className="bg-neutral-900 text-neutral-100 font-medium py-1"
+            >
               {m.name}
             </option>
           ))}
@@ -118,7 +142,7 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
       {/* Hardware Buttons & State Indicators */}
       <div className="border-t border-neutral-800 pt-3">
         <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider block mb-2">
-          Stany przycisków i sygnałów HID
+          {language === 'pl' ? 'Stany przycisków i sygnałów HID' : 'HID Button & Signal States'}
         </span>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -127,15 +151,19 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
             id="btn-test-trigger"
             type="button"
             onClick={onTriggerPull}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               gunState.trigger
                 ? 'bg-rose-600 border-rose-500 text-white shadow-sm shadow-rose-500/30 scale-95'
                 : 'bg-neutral-950 border-neutral-800 text-neutral-300 hover:border-neutral-700'
             }`}
           >
             <Zap className={`w-3.5 h-3.5 ${gunState.trigger ? 'text-white' : 'text-rose-400'}`} />
-            <span>Spust (Tip Switch)</span>
-            <span className={`w-1.5 h-1.5 rounded-full ${gunState.trigger ? 'bg-white' : 'bg-neutral-600'}`} />
+            <span>{language === 'pl' ? 'Spust (Tip Switch)' : 'Trigger (Tip Switch)'}</span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                gunState.trigger ? 'bg-white' : 'bg-neutral-600'
+              }`}
+            />
           </button>
 
           {/* In Range */}
@@ -147,8 +175,12 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
             }`}
           >
             <Radio className="w-3.5 h-3.5 text-emerald-400" />
-            <span>W Zasięgu Ekranu</span>
-            <span className={`w-1.5 h-1.5 rounded-full ${gunState.inRange ? 'bg-emerald-400 animate-pulse' : 'bg-neutral-700'}`} />
+            <span>{language === 'pl' ? 'W Zasięgu Ekranu' : 'In Screen Range'}</span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                gunState.inRange ? 'bg-emerald-400 animate-pulse' : 'bg-neutral-700'
+              }`}
+            />
           </div>
 
           {/* GunCon Buttons */}
@@ -167,16 +199,28 @@ export const GunStatusCard: React.FC<GunStatusCardProps> = ({
             id="btn-test-pedal"
             type="button"
             onClick={onTogglePedal}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
               gunState.pedal
                 ? 'bg-amber-500 border-amber-400 text-neutral-950 shadow-sm shadow-amber-500/20'
                 : 'bg-neutral-950 border-neutral-800 text-neutral-300 hover:border-neutral-700'
             }`}
-            title="Naciśnij spację na klawiaturze lub kliknij, aby wcisnąć pedał"
+            title={
+              language === 'pl'
+                ? 'Naciśnij spację na klawiaturze lub kliknij, aby wcisnąć pedał'
+                : 'Press Spacebar on keyboard or click to engage pedal'
+            }
           >
             <Footprints className="w-3.5 h-3.5 text-amber-400" />
-            <span>Pedał USB (Krycie/Przeładowanie)</span>
-            <span className={`w-1.5 h-1.5 rounded-full ${gunState.pedal ? 'bg-neutral-950' : 'bg-neutral-600'}`} />
+            <span>
+              {language === 'pl'
+                ? 'Pedał USB (Krycie/Rakiety/Reload)'
+                : 'USB Pedal (Cover/Missiles/Reload)'}
+            </span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                gunState.pedal ? 'bg-neutral-950' : 'bg-neutral-600'
+              }`}
+            />
           </button>
         </div>
       </div>

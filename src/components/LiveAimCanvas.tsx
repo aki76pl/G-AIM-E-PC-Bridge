@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Crosshair, Zap, RotateCcw, Eye, ShieldCheck } from 'lucide-react';
+import { RotateCcw, Eye } from 'lucide-react';
 import { GunState, MonitorProfile, Point2D } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface LiveAimCanvasProps {
   gunState: GunState;
@@ -17,6 +18,7 @@ export const LiveAimCanvas: React.FC<LiveAimCanvasProps> = ({
   onSimulatedTrigger,
   onResetTrajectory,
 }) => {
+  const { t, language } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [trail, setTrail] = useState<Point2D[]>([]);
   const [shotMarks, setShotMarks] = useState<Point2D[]>([]);
@@ -74,10 +76,10 @@ export const LiveAimCanvas: React.FC<LiveAimCanvasProps> = ({
           </div>
           <div>
             <h3 className="font-['Chakra_Petch'] font-bold text-sm tracking-wide text-neutral-200">
-              WIRTUALNY EKRAN I CELOWNIK LIVE
+              {t.canvasTitle}
             </h3>
             <p className="text-xs text-neutral-400">
-              Podgląd współrzędnych ekranowych po filtracji i kalibracji perspektywicznej
+              {t.canvasSubtitle}
             </p>
           </div>
         </div>
@@ -90,11 +92,11 @@ export const LiveAimCanvas: React.FC<LiveAimCanvasProps> = ({
               setTrail([]);
               onResetTrajectory();
             }}
-            className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-200 px-2 py-1 rounded bg-neutral-950 border border-neutral-800"
-            title="Wyczyść ślady strzałów"
+            className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-200 px-2 py-1 rounded bg-neutral-950 border border-neutral-800 cursor-pointer"
+            title={language === 'pl' ? 'Wyczyść ślady strzałów' : 'Clear shot marks'}
           >
             <RotateCcw className="w-3 h-3" />
-            <span>Wyczyść</span>
+            <span>{t.clearTrailBtn}</span>
           </button>
         </div>
       </div>
@@ -209,8 +211,12 @@ export const LiveAimCanvas: React.FC<LiveAimCanvasProps> = ({
         {/* Watermark/Instruction */}
         <div className="absolute bottom-2 left-3 text-[10px] text-neutral-500 font-mono pointer-events-none">
           {gunState.isSimulated
-            ? 'Poruszaj kursorem lub przeciągaj, aby celować pistoletem. Kliknij, aby pociągnąć za spust.'
-            : 'Fizyczny pistolet G\'AIM\'E podłączony — celuj bezpośrednio w ekran!'}
+            ? (language === 'pl'
+                ? 'Poruszaj kursorem lub przeciągaj, aby celować pistoletem. Kliknij, aby pociągnąć za spust.'
+                : 'Move cursor or drag to aim lightgun. Click to pull trigger.')
+            : (language === 'pl'
+                ? 'Fizyczny pistolet G\'AIM\'E podłączony — celuj bezpośrednio w ekran!'
+                : 'Physical G\'AIM\'E lightgun connected — aim directly at the screen!')}
         </div>
       </div>
 
@@ -219,16 +225,20 @@ export const LiveAimCanvas: React.FC<LiveAimCanvasProps> = ({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block" />
-            <span className="text-neutral-300 font-medium">Skalibrowany celownik (PCSX2)</span>
+            <span className="text-neutral-300 font-medium">
+              {language === 'pl' ? 'Skalibrowany celownik (Filtered)' : 'Calibrated Crosshair (Filtered)'}
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" />
-            <span className="text-neutral-400">Surowy punkt RAW sensora</span>
+            <span className="text-neutral-400">
+              {language === 'pl' ? 'Surowy punkt RAW sensora' : 'Raw Sensor Point (RAW)'}
+            </span>
           </div>
         </div>
 
         <div className="font-mono text-neutral-500">
-          Format: 6 bajtów HID digitizera (0x01 FLAGS Xlo Xhi Ylo Yhi)
+          Format: 6B HID (0x01 FLAGS Xlo Xhi Ylo Yhi)
         </div>
       </div>
     </div>

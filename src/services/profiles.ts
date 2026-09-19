@@ -549,35 +549,39 @@ input_player2_mouse_index = "0"`,
   },
   {
     id: 'terminator2_snes',
-    name: 'Terminator 2: The Arcade Game (SNES)',
-    system: 'Super Nintendo (RetroArch - Snes9x 1.62.3)',
+    name: 'T2: The Arcade Game (RetroArch SNES)',
+    system: 'Super Nintendo / SNES (RetroArch - Snes9x 1.62.3)',
     emulator: 'RetroArch',
-    romName: 'Terminator 2 - Judgment Day (USA)',
-    description: 'Wierna adaptacja zręcznościowego hitu arcade na Super Nintendo z obsługą pistoletu Super Scope. Odpieraj hordy Endo-szkieletów i czołgów Hunter Killer.',
+    romName: 't2arcade',
+    description: 'Wierna adaptacja zręcznościowego hitu arcade na Super Nintendo z obsługą pistoletu Nintendo Super Scope. Odpieraj hordy Endo-szkieletów T-800, latających HK i czołgów Skynetu.',
     pedalAction: 'CUSTOM',
     offscreenReload: false,
-    recommendedFilterStability: 0.33,
-    deadzone: 5,
+    recommendedFilterStability: 0.32,
+    deadzone: 4,
     sensitivityMultiplier: 1.0,
     buttonMapping: {
-      trigger: 'Mouse Left (Rapid Fire Gun)',
-      actionOrReload: 'Mouse Right (Missile Launcher)',
-      pedal: 'Key Space (Pedał: Wyrzutnia rakiet)',
-      start: 'Key Enter (Pause)',
-      coin: 'Key F2',
+      trigger: 'Mouse Left (Ogień maszynowy / Rapid Fire Gun)',
+      actionOrReload: 'Mouse Right (Wyrzutnia rakiet / Secondary Missiles)',
+      pedal: 'Key Space (Pedał: Salwa rakietowa)',
+      start: 'Key Enter (Start / Pause)',
+      coin: 'Key F2 (Credit)',
     },
-    pcsx2ConfigSnippet: `; Snes9x 1.62.3 Super Scope
+    pcsx2ConfigSnippet: `; RetroArch Snes9x 1.62.3 Super Scope
 input_libretro_device_p2 = "260"
 snes9x_lightgun_mode = "Lightgun"`,
     retroarchConfigSnippet: `; RetroArch Core Options: snes9x.opt
 snes9x_lightgun_mode = "Lightgun"
 snes9x_superscope_crosshair = "2"
 snes9x_overscan = "disabled"
+snes9x_aspect_ratio = "4:3"
 
-; Remap
+; Remap: config/remaps/Snes9x/t2arcade.rmp
 input_libretro_device_p2 = "260"
-input_player2_mouse_index = "0"`,
-    notes: 'Drugi przycisk pistoletu lub pedał USB wyzwala rakietnicę niszczącą całe grupy robotów Skynetu.',
+input_player2_mouse_index = "0"
+input_player2_gun_trigger = "mouse:1"
+input_player2_gun_offscreen_shot = "mouse:2"
+input_player2_gun_aux_b = "space"`,
+    notes: 'Gra zaprojektowana pod Nintendo Super Scope w Porcie 2. Prawy przycisk myszy lub pedał nożny USB odpala rakietnicę niszczącą całe grupy robotów.',
   },
   {
     id: 'lethal_enforcers_snes',

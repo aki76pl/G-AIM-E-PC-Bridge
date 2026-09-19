@@ -1,6 +1,6 @@
 {
   "name": "G'AIM'E PC Bridge",
-  "description": "Windows lightgun HID bridge, 4-point calibration, jitter filter, and PCSX2 integration for G'AIM'E (2E2C:0631)",
+  "description": "Windows lightgun HID bridge, 4-point calibration, jitter filter, and emulator integrations (RetroArch Snes9x, PCSX2, MAME, Model 2, TeknoParrot) for G'AIM'E (2E2C:0631)",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

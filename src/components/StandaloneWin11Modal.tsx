@@ -152,61 +152,6 @@ export const StandaloneWin11Modal: React.FC<StandaloneWin11ModalProps> = ({
             </pre>
           </div>
 
-          {/* Core Isolation / Memory Integrity Badge & Explainer */}
-          <div className="bg-emerald-950/30 border border-emerald-500/40 rounded-xl p-4.5 space-y-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-['Chakra_Petch'] font-bold text-sm text-emerald-300">
-                  PEŁNA ZGODNOŚĆ Z IZOLACJĄ RDZENIA (CORE ISOLATION & MEMORY INTEGRITY)
-                </h4>
-                <p className="text-[11px] text-neutral-300">
-                  Aplikacja została specjalnie zaprojektowana, aby <strong>nie była blokowana</strong> przez funkcje bezpieczeństwa Windows 11.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-xs text-neutral-300">
-              <div className="p-2.5 rounded-lg bg-neutral-950/70 border border-neutral-800 space-y-1">
-                <span className="font-bold text-emerald-400 block text-[11px]">
-                  1. Zero Sterowników Jądra (100% User-Mode)
-                </span>
-                <p className="text-[11px] text-neutral-400 leading-relaxed">
-                  Inne programy (stare wersje vJoy, vMulti, WinRing0) instalują sterowniki <code>.sys</code>, które trafiają na czarną listę Microsoftu (Vulnerable Driver Blocklist). Nasz bridge komunikuje się bezpośrednio przez oficjalny podsystem <code>hid.dll</code> i <code>user32.dll</code> bez dotykania jądra.
-                </p>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-neutral-950/70 border border-neutral-800 space-y-1">
-                <span className="font-bold text-emerald-400 block text-[11px]">
-                  2. Sprzętowa Ochrona Stosu (CET / Shadow Stacks)
-                </span>
-                <p className="text-[11px] text-neutral-400 leading-relaxed">
-                  Projekt kompilowany jest z flagą <code>CETCompat=true</code> oraz <code>HighEntropyVA=true</code> (64-bit ASLR), co gwarantuje pełną akceptację przez mechanizm Integralności Pamięci (HVCI).
-                </p>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-neutral-950/70 border border-neutral-800 space-y-1">
-                <span className="font-bold text-emerald-400 block text-[11px]">
-                  3. Bezpieczny Manifest (app.manifest)
-                </span>
-                <p className="text-[11px] text-neutral-400 leading-relaxed">
-                  Zawiera deklarację <code>level="asInvoker"</code> oraz zaawansowaną stertę pamięci <code>SegmentHeap</code>, eliminując heurystyczne ostrzeżenia Windows Defender Exploit Guard.
-                </p>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-neutral-950/70 border border-neutral-800 space-y-1">
-                <span className="font-bold text-emerald-400 block text-[11px]">
-                  4. Automatyczny Podpis Authenticode SHA-256
-                </span>
-                <p className="text-[11px] text-neutral-400 leading-relaxed">
-                  Skrypt <code>Publish_Standalone_Win11.bat</code> oraz <code>Podpisz_Certyfikatem_Lokalnym.ps1</code> sam tworzy zaufany podpis cyfrowy i zdejmuje blokadę pobrania (Zone.Identifier).
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Technical Specs of the Standalone Build */}
           <div className="bg-neutral-950/70 border border-neutral-800 rounded-xl p-4 space-y-3">
             <span className="text-xs font-semibold text-neutral-200 block">
